@@ -52,7 +52,7 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%}
 body.view-fan #fan{display:block}
 body.view-fan #labels{display:none}
 /* nothing to search, switch or export until there is a family */
-body.empty .search,body.empty #viewSeg,body.empty #scopeSeg,body.empty #addBtn,body.empty #importBtn,body.empty .rel,body.empty #privacy,body.empty #hint,body.empty #card{display:none!important}
+body.empty .search,body.empty #compass,body.empty #viewSeg,body.empty #scopeSeg,body.empty #addBtn,body.empty #importBtn,body.empty .rel,body.empty #privacy,body.empty #hint,body.empty #card{display:none!important}
 
 /* labels */
 .lbl{pointer-events:none;text-align:center;white-space:nowrap;padding:4px 9px;border-radius:10px;background:var(--lbl-bg);transition:background .2s,box-shadow .2s;user-select:none}
@@ -219,6 +219,97 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
 .fan-sub{fill:var(--muted);font-family:var(--sans)}
 .fan-legend{transition:opacity .2s}
 
+/* compass: one person in the middle, parents above, siblings beside, children below */
+#compass{position:fixed;inset:0;display:none;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;z-index:1;background:radial-gradient(900px 600px at 50% 25%,var(--bg-glow) 0%,var(--bg) 70%),var(--bg)}
+:root:not([data-theme="dark"]) #compass{background:radial-gradient(900px 600px at 50% 25%,#fff 0%,var(--bg) 75%)}
+body.view-compass #compass{display:block}
+body.view-compass #labels,body.view-compass #nav,body.view-compass #hint,body.view-compass #scopeSeg,body.view-compass #privacy{display:none}
+.cp{max-width:720px;margin:0 auto;padding:112px 12px calc(92px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
+.cp-h{display:flex;align-items:center;gap:8px;margin:8px 4px -2px;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.cp-h small{font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.cp-h button{margin-left:auto;border:0;background:transparent;color:var(--accent);font-size:12.5px;font-weight:600;letter-spacing:0;text-transform:none;padding:4px 2px}
+.cp-parents{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:8px}
+.cp-fork{position:relative;height:16px;margin:-10px 0 -10px}
+.cp-fork::before{content:"";position:absolute;left:25%;right:25%;top:0;height:8px;border:1.5px solid var(--line2);border-top:0;border-radius:0 0 10px 10px}
+.cp-fork::after{content:"";position:absolute;left:50%;top:8px;bottom:0;border-left:1.5px solid var(--line2)}
+.cp-card{position:relative;display:flex;align-items:center;gap:10px;min-width:0;min-height:62px;text-align:left;padding:10px 12px;border-radius:16px;border:1px solid var(--line);background:var(--panel-solid);box-shadow:var(--shadow);color:var(--text);transition:transform .15s,border-color .15s;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.cp-card:hover{border-color:var(--line2)}
+.cp-card:active{transform:scale(.97)}
+.cp-av{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:var(--g);color:#fff;font:700 13px var(--display);letter-spacing:-.02em}
+.dead>.cp-av,.dead .cp-top .cp-av{filter:saturate(.4) brightness(.92)}
+:root[data-theme="dark"] .cp-av,:root[data-theme="dark"] .avatar{color:#0b1020}
+.cp-card.inferred .cp-av{background:transparent;border:1.5px dashed var(--g);color:var(--g)}
+.cp-tx{display:grid;min-width:0}
+.cp-tx b{font:600 13.5px/1.25 var(--sans);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
+.cp-tx small{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.cp-tx em{font-style:normal;font-size:11px;font-weight:500;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp-role{position:absolute;top:-8px;left:12px;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--panel-solid);padding:1px 6px;border-radius:6px;border:1px solid var(--line)}
+.cp-n{font-style:normal;font-size:10.5px;font-weight:600;color:var(--muted);background:var(--sunken);border-radius:6px;padding:0 5px;margin-left:4px}
+.cp-add{justify-content:center;border-style:dashed;border-color:var(--line2);background:transparent;box-shadow:none;color:var(--muted);font-weight:500;font-size:13px}
+.cp-card.me{border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft);cursor:default}
+.cp-card.me:active{transform:none}
+.cp-hero{--g:var(--u);position:relative;padding:18px 16px 16px;border-radius:24px;border:1px solid var(--line);transform-origin:top left;touch-action:pan-y;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--g) 13%,var(--panel-solid)),var(--panel-solid) 140px);box-shadow:0 1px 2px rgba(16,24,40,.05),0 26px 50px -24px rgba(16,24,40,.3)}
+.cp-top{display:flex;gap:14px;align-items:center}
+.cp-top .cp-av{width:60px;height:60px;border-radius:20px;font-size:21px;box-shadow:0 10px 24px -10px var(--g)}
+.cp-hero h2{margin:0;font:700 23px/1.12 var(--display);letter-spacing:-.025em}
+.cp-hero h2 span{color:var(--muted);font-size:17px}
+.cp-top p{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
+.cp-kin{margin-top:14px;padding:8px 12px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--accent-line);display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
+.cp-kin b{font:700 15px var(--display);color:var(--accent);letter-spacing:-.01em}
+.cp-kin span{font-size:12px;color:var(--muted)}
+.cp-facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cp-facts span{font-size:12px;color:var(--muted);background:var(--sunken);border:1px solid var(--line);border-radius:99px;padding:4px 10px}
+.cp-facts span.hl{color:var(--accent);background:var(--accent-soft);border-color:var(--accent-line);font-weight:600}
+.cp-life{margin-top:16px;display:grid;gap:6px}
+.cp-lrow{display:grid;grid-template-columns:64px 1fr;align-items:center;gap:8px;border:0;background:none;padding:0;text-align:left;color:var(--muted);font-size:11.5px;min-height:14px}
+button.cp-lrow{cursor:pointer}
+.cp-lrow.me{color:var(--text);font-weight:600}
+.cp-ln{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cp-track{position:relative;height:8px;border-radius:4px;background:var(--sunken)}
+.cp-track i{position:absolute;top:0;bottom:0;border-radius:4px;background:var(--g)}
+.cp-track i.dead{opacity:.5}
+.cp-track i.open{background:linear-gradient(90deg,var(--g) 30%,transparent)}
+.cp-lrow.me .cp-track{height:12px;border-radius:6px}.cp-lrow.me i{border-radius:6px}
+.cp-track b{position:absolute;top:-3px;bottom:-3px;width:1.5px;background:var(--accent);opacity:.6}
+.cp-axis{min-height:12px}.cp-axis .cp-track{background:none;height:12px}
+.cp-axis .cp-track span{position:absolute;top:-2px;transform:translateX(-50%);font-size:10px;color:var(--faint);font-variant-numeric:tabular-nums}
+.cp-axis .cp-track span.now{color:var(--accent);font-weight:600}
+.cp-mates{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
+.cp-lab{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-right:2px}
+.cp-chip{display:inline-flex;align-items:center;gap:7px;padding:4px 11px 4px 4px;border-radius:99px;border:1px solid var(--line);background:var(--panel-solid);font-size:12.5px;color:var(--text)}
+.cp-chip .cp-av{width:26px;height:26px;border-radius:50%;font-size:9.5px}
+.cp-chip small{color:var(--muted)}
+.cp-chip.cp-add{padding:6px 12px;font-size:12.5px}
+.cp-acts{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}
+.cp-acts .btn{flex:1 1 auto}
+.cp-strip{display:flex;gap:8px;overflow-x:auto;padding:10px 12px 6px;margin:0 -12px;scroll-snap-type:x proximity;scrollbar-width:none}
+.cp-strip::-webkit-scrollbar{display:none}
+.cp-strip .cp-card{flex:none;width:158px;scroll-snap-align:center}
+.cp-kids{display:grid;grid-template-columns:1fr 1fr;gap:16px 8px;padding-top:8px}
+.cp-kids .cp-add:only-child{grid-column:1/-1}
+.cp-bar{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:4;display:none;align-items:center;gap:2px;padding:4px;border-radius:16px;max-width:560px;margin:0 auto}
+body.view-compass:not(.empty) .cp-bar{display:flex}
+.cp-bar>button{flex:none;width:42px;height:40px;border:0;background:transparent;border-radius:12px;display:grid;place-items:center;color:var(--text)}
+.cp-bar>button:hover{background:var(--hover)}
+.cp-bar>button:disabled{opacity:.28;background:transparent}
+.cp-bar svg{width:18px;height:18px}
+.cp-trail{flex:1;min-width:0;display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;font-size:12.5px;white-space:nowrap;mask-image:linear-gradient(90deg,transparent,#000 18px)}
+.cp-trail::-webkit-scrollbar{display:none}
+.cp-trail button{border:0;background:transparent;color:var(--muted);padding:6px;border-radius:8px}
+.cp-trail button:hover{color:var(--text)}
+.cp-trail i{color:var(--faint);font-style:normal}
+.cp-trail b{padding:6px;font-weight:600}
+@keyframes cp-nudge{30%{transform:translateX(-8px)}60%{transform:translateX(6px)}}
+.cp-hero.nudge{animation:cp-nudge .3s ease}
+@media (min-width:901px){
+  .cp{padding-top:84px;gap:12px}
+  .cp-hero{padding:24px 24px 20px}.cp-hero h2{font-size:28px}
+  .cp-kids{grid-template-columns:repeat(3,1fr)}
+  .cp-strip{margin:0 -4px;padding:10px 4px 6px}
+}
+@media (prefers-reduced-motion:reduce){.cp-card{transition:none}.cp-hero.nudge{animation:none}}
+
 @media (max-width:1240px){
   .brand small{display:none}
   .search{width:min(240px,24vw)}
@@ -236,10 +327,10 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
   #top{flex-wrap:wrap;top:10px;left:10px;right:10px;gap:6px}
   .brand{order:1;height:40px;width:40px;justify-content:center}
   .search{order:2;flex:1;width:auto;min-width:0}
-  #importBtn{order:3}.rel{order:4}#themeBtn{order:5}
-  .brk{display:block;order:6;flex-basis:100%;height:0}
+  #addBtn{order:3}#importBtn{order:4}.rel{order:5}#themeBtn{order:6}
+  .brk{display:block;order:7;flex-basis:100%;height:0}
   .spacer{display:none}
-  #viewSeg{order:7}#scopeSeg{order:8}#addBtn{order:9;margin-left:auto}
+  #viewSeg{order:8}#scopeSeg{order:9;margin-left:auto}
   .btn,.search input{height:40px}
   .btn.icon,#importBtn,#exportBtn,#addBtn{width:40px}
   .seg{height:40px}.seg button{height:32px;padding:0 9px}
@@ -279,6 +370,8 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
 <div id="stage"></div>
 <div id="labels"></div>
 <div id="fan"></div>
+<div id="compass"></div>
+<nav class="cp-bar glass" id="cpBar" aria-label="Pusula gezintisi"></nav>
 
 <header id="top">
   <div class="brand glass">
@@ -294,8 +387,8 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
   <div class="brk"></div>
   <div class="seg glass" id="viewSeg">
     <button data-view="tree" class="on" title="Kuşaklar yatay sıralarda">Ağaç</button>
-    <button data-view="tower" title="Ağaç dönen bir silindirin yüzeyinde">Kule 3B</button>
     <button data-view="fan" title="Ata yelpazesi">Yelpaze</button>
+    <button data-view="compass" title="Kişiden kişiye gez: ebeveynler yukarıda, kardeşler yanda, çocuklar aşağıda">Pusula</button>
   </div>
   <div class="seg glass" id="scopeSeg" title="Görünür kişiler">
     <button data-scope="all" class="on" title="Bağlantılı herkes"><span class="long">Tüm bağlar</span><span class="short">Tümü</span></button>
@@ -1101,22 +1194,12 @@ function computeLayout(focus) {
     X.set(T);
   }
   const off = X[ix.get(focus)];
-  // the tower wraps the widest generation exactly once around the cylinder
-  let widest = 0;
-  for (const row of rows.values()) widest = Math.max(widest, Math.max(...row.map(i => X[i])) - Math.min(...row.map(i => X[i])));
-  TOWER_R = Math.max(340, (widest + GAP * 1.5) / (Math.PI * 2));
   const pos = new Map();
   ids.forEach((id, i) => pos.set(id, place(X[i] - off, G[i] * GEN_H)));
   return { pos, gen, hops };
 }
-let TOWER_R = 400;
-const isTower = () => S.view === 'tower';
-// flat tree coordinates -> 3D: a gently bent sheet, or the surface of a cylinder in tower view
-function place(x, y) {
-  if (!isTower()) return new THREE.Vector3(x, y, -x * x / BEND);
-  const t = x / TOWER_R;
-  return new THREE.Vector3(TOWER_R * Math.sin(t), y, TOWER_R * Math.cos(t));
-}
+// flat tree coordinates -> 3D: a gently bent sheet
+const place = (x, y) => new THREE.Vector3(x, y, -x * x / BEND);
 function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return Math.abs(h); }
 
 /* ================= 3D scene ================= */
@@ -1132,7 +1215,6 @@ scene.fog = new THREE.FogExp2(TH.bg, 0.00009);
 const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 1, 6000);
 camera.position.set(0, 90, 900);
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.addEventListener('change', () => { if (isTower()) hlDirty = true; });
 controls.enableDamping = true; controls.dampingFactor = 0.07; controls.maxDistance = 2600; controls.minDistance = 40;
 
 function glowTexture(ring) {
@@ -1237,15 +1319,14 @@ function relayout(keepCamera) {
   ringGroup.children.slice().forEach(c => { ringGroup.remove(c); c.geometry?.dispose?.(); if (c.element) c.element.remove(); });
   const gens = new Map();
   for (const [id, v] of layout.pos) { const g = layout.gen.get(id), r = gens.get(g) || [0, 0]; gens.set(g, [Math.min(r[0], v.x), Math.max(r[1], v.x)]); }
-  const tower = isTower();
   let minX = 0, maxX = 0, minY = 0, maxY = 0;
   for (const [g, [x0, x1]] of gens) { minX = Math.min(minX, x0); maxX = Math.max(maxX, x1); minY = Math.min(minY, g * GEN_H); maxY = Math.max(maxY, g * GEN_H); }
   for (const [g] of gens) {
-    const pts = [], a = tower ? -Math.PI * TOWER_R : minX - 90, b = tower ? Math.PI * TOWER_R : maxX + 90, y = g * GEN_H - 34;
+    const pts = [], a = minX - 90, b = maxX + 90, y = g * GEN_H - 34;
     for (let i = 0; i <= 96; i++) pts.push(place(a + (b - a) * i / 96, y));
     ringGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: g === 0 ? TH.accent : TH.guide, transparent: true, opacity: g === 0 ? 0.3 : 0.16, depthWrite: false })));
     const el = document.createElement('div'); el.className = 'ring-lbl'; el.textContent = genName(g);
-    const lo = new CSS2DObject(el); lo.position.copy(tower ? place(-TOWER_R * 1.25, g * GEN_H) : place(a, g * GEN_H)); ringGroup.add(lo);
+    const lo = new CSS2DObject(el); lo.position.copy(place(a, g * GEN_H)); ringGroup.add(lo);
   }
   moving = true; hlDirty = true;
   layout.bounds = { minX, maxX, minY, maxY };
@@ -1268,15 +1349,8 @@ function frameView(mode = 'auto') {
   const readable = GAP * innerHeight / (2 * 150 * Math.tan(vf));
   const whole = mode === 'all' || (mode === 'auto' && fit <= Math.max(readable, 520));
   const cy = whole ? (b.minY + b.maxY) / 2 : Math.min(Math.max(GEN_H * 0.6, b.minY), b.maxY);
-  let target, pos;
-  if (isTower()) {
-    // orbit around the tower's axis, looking at its front face from a little above
-    const d = whole ? Math.max(halfH / Math.tan(vf), TOWER_R * 1.3 / Math.tan(hf)) : Math.max(readable, 520);
-    target = new THREE.Vector3(0, cy, 0); pos = new THREE.Vector3(0, cy + d * 0.22, TOWER_R + d);
-  } else {
-    const d = whole ? fit : Math.max(readable, 520), cx = whole ? (b.minX + b.maxX) / 2 : 0;
-    target = new THREE.Vector3(cx, cy, 0); pos = new THREE.Vector3(cx, cy + d * 0.05, d);
-  }
+  const d = whole ? fit : Math.max(readable, 520), cx = whole ? (b.minX + b.maxX) / 2 : 0;
+  const target = new THREE.Vector3(cx, cy, 0), pos = new THREE.Vector3(cx, cy + d * 0.05, d);
   camTween = { from: controls.target.clone(), to: target, t: 0, fromPos: camera.position.clone(), toPos: pos };
 }
 function zoomBy(f) {
@@ -1291,24 +1365,17 @@ function panBy(dx, dy) {
   const off = right.multiplyScalar(dx * d).addScaledVector(up, dy * d);
   camTween = { from: controls.target.clone(), to: controls.target.clone().add(off), t: 0, dur: 0.3, fromPos: camera.position.clone(), toPos: camera.position.clone().add(off) };
 }
-function orbitBy(a) {
-  const rel = camera.position.clone().sub(controls.target).applyAxisAngle(new THREE.Vector3(0, 1, 0), a);
-  camTween = { from: controls.target.clone(), to: controls.target.clone(), t: 0, dur: 0.35, fromPos: camera.position.clone(), toPos: controls.target.clone().add(rel), arc: a };
-}
-// Tree: drag pans (it's a flat sheet); tower: drag spins the cylinder. Both zoom toward the cursor.
+// Drag pans (it's a flat sheet), right drag tilts it, the wheel zooms toward the cursor.
 function applyControls() {
-  const tower = isTower();
   controls.zoomToCursor = true; controls.screenSpacePanning = true;
-  controls.mouseButtons = tower ? { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN }
-    : { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
-  controls.touches = { ONE: tower ? THREE.TOUCH.ROTATE : THREE.TOUCH.PAN, TWO: null }; // two fingers: see pinch below
-  controls.rotateSpeed = isPhone() ? 0.55 : 1;
-  controls.minPolarAngle = tower ? 0.3 : Math.PI / 2 - 0.6; controls.maxPolarAngle = tower ? Math.PI - 0.3 : Math.PI / 2 + 0.4;
-  controls.minAzimuthAngle = tower ? -Infinity : -0.8; controls.maxAzimuthAngle = tower ? Infinity : 0.8;
+  controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+  controls.touches = { ONE: THREE.TOUCH.PAN, TWO: null }; // two fingers: see pinch below
+  controls.minPolarAngle = Math.PI / 2 - 0.6; controls.maxPolarAngle = Math.PI / 2 + 0.4;
+  controls.minAzimuthAngle = -0.8; controls.maxAzimuthAngle = 0.8;
   const hints = {
     tree: 'Sürükle: kaydır · Tekerlek: imlece yakınlaş · Shift+tekerlek: yana kaydır · Sağ tık: eğ · Kişiye çift tık: merkeze al',
-    tower: 'Sürükle: döndür · Tekerlek: yakınlaş · Shift+tekerlek: döndür · Sağ tık: kaydır · Kişiye çift tık: merkeze al',
-    fan: 'Sürükle: kaydır · Tekerlek: imlece yakınlaş · Boşluğa çift tık: yakınlaş · Kişiye çift tık: merkeze al'
+    fan: 'Sürükle: kaydır · Tekerlek: imlece yakınlaş · Boşluğa çift tık: yakınlaş · Kişiye çift tık: merkeze al',
+    compass: ''
   };
   $('#hint').textContent = hints[S.view];
 }
@@ -1342,7 +1409,7 @@ function rebuildLines() {
     }
   };
   const vis = id => { const n = nodes.get(id); return n && n.alpha > 0.03 ? n : null; };
-  const weight = (...ids) => { const a = Math.min(...ids.map(i => (vis(i)?.alpha ?? 0) * (vis(i)?.face ?? 1))); if (!hl) return 0.6 * a; return (ids.every(i => hl.has(i)) ? 1 : 0.15) * a; };
+  const weight = (...ids) => { const a = Math.min(...ids.map(i => vis(i)?.alpha ?? 0)); if (!hl) return 0.6 * a; return (ids.every(i => hl.has(i)) ? 1 : 0.15) * a; };
   const couples = new Set();
   for (const [id, n] of nodes) {
     if (!vis(id)) continue;
@@ -1381,7 +1448,7 @@ function animate(now = performance.now()) {
   // time-based easing so slow or throttled devices settle just as quickly
   const dt = Math.max(0, Math.min(0.5, (now - lastT) / 1000)); lastT = Math.max(lastT, now);
   const ease = k => 1 - Math.exp(-dt * k);
-  if (S.view === 'fan') return;
+  if (S.view === 'fan' || S.view === 'compass') return;
   if (Math.abs(sheetPx / 2 - viewShift) > 0.5) {
     viewShift += (sheetPx / 2 - viewShift) * ease(9);
     if (!sheetPx && viewShift < 0.5) { viewShift = 0; camera.clearViewOffset(); }
@@ -1391,8 +1458,7 @@ function animate(now = performance.now()) {
     camTween.t = Math.min(1, camTween.t + dt / (camTween.dur || 1.1));
     const e = 1 - (1 - camTween.t) ** 3;
     const nt = camTween.from.clone().lerp(camTween.to, e);
-    if (camTween.arc) camera.position.copy(camTween.fromPos).sub(camTween.from).applyAxisAngle(new THREE.Vector3(0, 1, 0), camTween.arc * e).add(nt);
-    else if (camTween.toPos) camera.position.lerpVectors(camTween.fromPos, camTween.toPos, e);
+    if (camTween.toPos) camera.position.lerpVectors(camTween.fromPos, camTween.toPos, e);
     else camera.position.add(nt.clone().sub(controls.target));
     controls.target.copy(nt);
     if (camTween.t >= 1) camTween = null;
@@ -1411,13 +1477,8 @@ function animate(now = performance.now()) {
     const big = id === S.focus ? 30 : id === S.selected ? 25 : 19;
     n.scale += (big - n.scale) * ease(9);
     n.sprite.scale.setScalar(n.scale * (0.6 + 0.4 * n.alpha));
-    // tower: people on the far side of the cylinder fade back
-    if (isTower()) {
-      const nx = n.pos.x / TOWER_R, nz = n.pos.z / TOWER_R, to = tmp.copy(camera.position).sub(n.pos).normalize();
-      n.face = Math.max(0.18, Math.min(1, 0.55 + (nx * to.x + nz * to.z) * 2.2));
-    } else n.face = 1;
     const dim = hl && !hl.has(id) ? 0.3 : 1;
-    n.sprite.material.opacity = n.alpha * dim * n.face;
+    n.sprite.material.opacity = n.alpha * dim;
     const o = (n.show ? 1 : 0) * (hl && !hl.has(id) ? 0.35 : 1) * n.alpha;
     n.lo = o < (n.lo ?? 0) ? Math.max(o, (n.lo ?? 0) - ease(30)) : (n.lo ?? 0) + (o - (n.lo ?? 0)) * ease(12);
     n.el.style.opacity = n.lo.toFixed(2);
@@ -1439,7 +1500,6 @@ function declutter(hl) {
   for (const [id, n] of nodes) {
     n.show = false;
     if (n.talpha === 0 || n.alpha < 0.2) continue;
-    if ((n.face ?? 1) < 0.7 && id !== S.focus && id !== S.selected) continue;
     const v = tmp.copy(n.pos).project(camera);
     if (v.z > 1 || Math.abs(v.x) > 1.1 || Math.abs(v.y) > 1.1) continue;
     if (!n.w && n.el.offsetWidth) { n.w = n.el.offsetWidth; n.h = n.el.offsetHeight; }
@@ -1506,7 +1566,7 @@ canvas.addEventListener('pointermove', e => {
   const id = pick(e); if (id !== S.hover) { S.hover = id; hlDirty = true; canvas.style.cursor = id ? 'pointer' : 'grab'; }
 });
 
-/* Mouse wheel and trackpad: smooth zoom toward the cursor, sideways scroll pans (spins the tower),
+/* Mouse wheel and trackpad: smooth zoom toward the cursor, sideways scroll pans,
    trackpad pinch arrives as ctrl+wheel. Handled on #stage so OrbitControls keeps only drag and touch. */
 const ndc = e => new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
 function wheelZoom(f, at) { camTween = null; pendingZoom.f *= f; pendingZoom.at.copy(at); }
@@ -1514,11 +1574,10 @@ function zoomAt(f, at) {
   const dist = controls.getDistance(), d = Math.max(controls.minDistance, Math.min(controls.maxDistance, dist * f));
   f = d / dist;
   const p = controls.target.clone();
-  if (!isTower()) { // keep the point under the cursor in place; the tower always zooms along its axis
-    ray.setFromCamera(at, camera);
-    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()), controls.target);
-    ray.ray.intersectPlane(plane, p);
-  }
+  // keep the point under the cursor in place
+  ray.setFromCamera(at, camera);
+  const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()), controls.target);
+  ray.ray.intersectPlane(plane, p);
   camera.position.sub(p).multiplyScalar(f).add(p);
   controls.target.sub(p).multiplyScalar(f).add(p);
 }
@@ -1544,7 +1603,7 @@ function panPixels(dx, dy) {
     if (pts.size !== 2 || !last) return;
     const m = mid();
     zoomAt(last.d / m.d, ndc({ clientX: m.x, clientY: m.y }));
-    if (isTower()) panPixels(0, last.y - m.y); else panPixels(last.x - m.x, last.y - m.y);
+    panPixels(last.x - m.x, last.y - m.y);
     last = m; hlDirty = true;
   });
   const lift = e => { pts.delete(e.pointerId); if (pts.size < 2) last = null; };
@@ -1557,7 +1616,7 @@ $('#stage').addEventListener('wheel', e => {
   let dx = e.deltaX * unit, dy = e.deltaY * unit;
   if (e.shiftKey && !dx) { dx = dy; dy = 0; }
   if (e.ctrlKey) return wheelZoom(Math.exp(dy * 0.01), ndc(e)); // trackpad pinch
-  if (dx) { if (isTower()) { camera.position.sub(controls.target).applyAxisAngle(new THREE.Vector3(0, 1, 0), dx * 0.004).add(controls.target); hlDirty = true; } else panPixels(dx, 0); }
+  if (dx) panPixels(dx, 0);
   if (dy) wheelZoom(Math.exp(dy * 0.0016), ndc(e));
 }, { capture: true, passive: false });
 addEventListener('resize', () => {
@@ -1687,10 +1746,192 @@ function renderFan() {
   svg.addEventListener('dblclick', e => { const t = e.target.closest('[data-id]'); if (t) setFocus(t.dataset.id); else { const p = toSvg(e.clientX, e.clientY); fanZoom(0.5, p.x, p.y); } });
 }
 
+/* ================= compass: person-centred navigator ================= */
+// One person at a time: parents above, siblings beside, children below. Tapping a card flies it to the middle.
+const CP = { cur: null, trail: [], swipedAt: 0 };
+const NOW_Y = new Date().getFullYear();
+const ICON_BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+const ICON_HOME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>';
+function countUp(id, seen = new Set()) {
+  const p = P(id); let n = 0;
+  for (const q of [p.father, p.mother]) if (q && !seen.has(q)) { seen.add(q); n += 1 + countUp(q, seen); }
+  return n;
+}
+function countDown(id, seen = new Set()) {
+  let n = 0;
+  for (const k of kids(id)) if (!seen.has(k)) { seen.add(k); n += 1 + countDown(k, seen); }
+  return n;
+}
+const birthOrder = id => [id, ...siblings(id)].sort((a, b) => (yearOf(P(a).birthDate) ?? 9999) - (yearOf(P(b).birthDate) ?? 9999));
+function sibRole(id, of) {
+  const a = yearOf(P(id).birthDate), b = yearOf(P(of).birthDate), g = P(id).gender;
+  if (a && b && a < b) return g === 'M' ? 'Ağabey' : g === 'F' ? 'Abla' : 'Kardeş';
+  return g === 'M' ? 'Erkek kardeş' : g === 'F' ? 'Kız kardeş' : 'Kardeş';
+}
+// relation to the tree's centre, shown once you have walked away from it
+function cpKin(id) {
+  if (!S.focus || CP.cur === S.focus) return '';
+  return id === S.focus ? 'Ağacın merkezi' : kinTerm(S.focus, id).term.replace(/ \(.+\)$/, '');
+}
+function cpCard(id, o = {}) {
+  const p = P(id), kin = cpKin(id);
+  const up = o.up ? countUp(id) : 0, down = o.down ? countDown(id) : 0;
+  return `<button class="cp-card${p.alive === false ? ' dead' : ''}${p.inferred ? ' inferred' : ''}${o.me ? ' me' : ''}"${o.me ? '' : ` data-go="${id}" data-dir="${o.dir || ''}"`} style="--g:${GCOL[p.gender]}">
+    ${o.role ? `<span class="cp-role">${esc(o.role)}</span>` : ''}<span class="cp-av">${esc(initials(p))}</span>
+    <span class="cp-tx"><b>${esc(fullName(p))}</b><small>${esc(lifespan(p) || 'Tarih yok')}${up ? ` <i class="cp-n" title="Bilinen ${up} ata">↑ ${up}</i>` : ''}${down ? ` <i class="cp-n" title="${down} torun ve sonrası">↓ ${down}</i>` : ''}</small>${kin ? `<em>${esc(kin)}</em>` : ''}</span></button>`;
+}
+const cpAdd = (rel, label) => `<button class="cp-card cp-add" data-add="${rel}">+ ${label}</button>`;
+function cpFacts(id) {
+  const p = P(id), b = yearOf(p.birthDate), out = [];
+  const ageAt = q => { const y = q && yearOf(P(q).birthDate); return b && y && b - y > 10 ? b - y : null; };
+  const fa = ageAt(p.father), ma = ageAt(p.mother);
+  if (fa || ma) out.push(`Doğduğunda ${[fa ? `babası ${fa}` : '', ma ? `annesi ${ma}` : ''].filter(Boolean).join(', ')} yaşındaydı`);
+  const ks = kids(id), gk = new Set(ks.flatMap(k => kids(k)));
+  if (ks.length) out.push(`${ks.length} çocuk${gk.size ? ` · ${gk.size} torun` : ''}`);
+  const f = ks.map(k => yearOf(P(k).birthDate)).filter(Boolean);
+  if (b && f.length) out.push(`İlk çocuğu ${Math.min(...f) - b} yaşında`);
+  return out;
+}
+// everyone close by on one time axis: who overlapped with whom, and for how long
+function cpLife(id) {
+  const p = P(id);
+  const rows = [[p.father, 'up'], [p.mother, 'up'], [id, ''], ...mates(id).map(m => [m, 'next']), ...kids(id).map(k => [k, 'down'])]
+    .filter(([q]) => q && yearOf(P(q).birthDate));
+  if (rows.length < 2 || !yearOf(p.birthDate)) return '';
+  const spans = rows.map(([q]) => {
+    const r = P(q), b = yearOf(r.birthDate), d = yearOf(r.deathDate);
+    return [b, d ?? (r.alive === false || NOW_Y - b > 100 ? null : NOW_Y)];
+  });
+  const lo = Math.min(...spans.map(s => s[0])) - 4, hi = Math.max(NOW_Y, ...spans.map(s => s[1] ?? s[0] + 14)) + 2;
+  const pc = y => ((y - lo) / (hi - lo) * 100).toFixed(2);
+  const ticks = [];
+  for (let y = Math.ceil(lo / 25) * 25; y <= hi; y += 25) if (Math.abs(y - NOW_Y) > 9) ticks.push(y);
+  return `<div class="cp-life" aria-label="Hayat çizgileri">
+    <div class="cp-lrow cp-axis"><span></span><span class="cp-track">${ticks.map(y => `<span style="left:${pc(y)}%">${y}</span>`).join('')}<span class="now" style="left:${pc(NOW_Y)}%">bugün</span></span></div>
+    ${rows.map(([q, dir], i) => {
+      const r = P(q), [b, e] = spans[i], me = q === id;
+      return `<${me ? 'div' : 'button'} class="cp-lrow${me ? ' me' : ''}"${me ? '' : ` data-go="${q}" data-dir="${dir}"`} style="--g:${GCOL[r.gender]}" title="${esc(fullName(r))} · ${esc(lifespan(r))}">
+        <span class="cp-ln">${esc(r.first || '?')}</span>
+        <span class="cp-track"><i class="${e == null ? 'open' : ''}${r.alive === false ? ' dead' : ''}" style="left:${pc(b)}%;width:${(pc(e ?? b + 14) - pc(b)).toFixed(2)}%"></i><b style="left:${pc(NOW_Y)}%"></b></span></${me ? 'div' : 'button'}>`;
+    }).join('')}
+  </div>`;
+}
+function cpHero(id) {
+  const p = P(id), fp = P(S.focus);
+  let kin = '';
+  if (id !== S.focus && fp) { const k = kinTerm(S.focus, id); kin = `<b>${esc(k.term)}</b><span>${esc(possessive(fp.first))} ${esc(lower(k.term[0]) + k.term.slice(1))}${k.chain ? ' · ' + esc(k.chain) : ''}</span>`; }
+  const ms = mates(id), facts = cpFacts(id);
+  if (!kin) facts.unshift('★ Ağacın merkezi');
+  return `<article class="cp-hero${p.alive === false ? ' dead' : ''}" style="--g:${GCOL[p.gender]}">
+    <div class="cp-top"><span class="cp-av">${esc(initials(p))}</span>
+      <div><h2>${esc(fullName(p))}${p.alive === false ? ' <span>†</span>' : ''}</h2>
+      <p>${[lifespan(p), ageText(p)].filter(Boolean).map(esc).join(' · ') || 'Tarih bilinmiyor'}${p.birthPlace ? `<br>${esc(p.birthPlace)} doğumlu` : ''}</p></div></div>
+    ${kin ? `<div class="cp-kin">${kin}</div>` : ''}
+    ${facts.length ? `<div class="cp-facts">${facts.map(f => `<span${f[0] === '★' ? ' class="hl"' : ''}>${esc(f)}</span>`).join('')}</div>` : ''}
+    ${cpLife(id)}
+    <div class="cp-mates"><span class="cp-lab">${ms.length > 1 ? 'Eşleri' : 'Eşi'}</span>
+      ${ms.map(m => `<button class="cp-chip" data-go="${m}" data-dir="next" style="--g:${GCOL[P(m).gender]}"><span class="cp-av">${esc(initials(P(m)))}</span>${esc(fullName(P(m)))} <small>${esc(lifespan(P(m)))}</small></button>`).join('')}
+      ${ms.length ? '' : '<button class="cp-chip cp-add" data-add="spouse">+ Eş ekle</button>'}</div>
+    <div class="cp-acts">
+      ${id !== S.focus ? '<button class="btn sm primary" data-a="root">Merkeze al</button>' : ''}
+      <button class="btn sm" data-a="info">Ayrıntılar</button>
+      <button class="btn sm" data-a="tree">Ağaçta göster</button>
+    </div>
+  </article>`;
+}
+function renderCompass(dir = '', from = null) {
+  const box = $('#compass'), bar = $('#cpBar');
+  reindex();
+  if (!CP.cur || !P(CP.cur)) CP.cur = S.focus;
+  const id = CP.cur, p = P(id);
+  if (!p) { box.innerHTML = bar.innerHTML = ''; return; }
+  const sibs = birthOrder(id), ks = kids(id), pos = sibs.indexOf(id);
+  const parents = [p.father ? cpCard(p.father, { role: 'Baba', dir: 'up', up: true }) : cpAdd('father', 'Baba ekle'),
+    p.mother ? cpCard(p.mother, { role: 'Anne', dir: 'up', up: true }) : cpAdd('mother', 'Anne ekle')];
+  box.innerHTML = `<div class="cp">
+    <section class="cp-parents">${parents.join('')}</section>
+    <div class="cp-fork" aria-hidden="true"></div>
+    ${cpHero(id)}
+    <div class="cp-h">Kardeşler${sibs.length > 1 ? ` <small>${sibs.length} çocuktan ${pos + 1}.si</small>` : ''}<button data-add="sibling">+ Ekle</button></div>
+    <div class="cp-strip">${sibs.map((s, i) => s === id ? cpCard(s, { me: true, role: 'Kendisi' }) : cpCard(s, { role: sibRole(s, id), dir: i < pos ? 'prev' : 'next' })).join('')}</div>
+    <div class="cp-h">Çocuklar${ks.length ? ` <small>${ks.length}</small>` : ''}${ks.length ? '<button data-add="child">+ Ekle</button>' : ''}</div>
+    <section class="cp-kids">${ks.length ? ks.map(k => cpCard(k, { role: P(k).gender === 'M' ? 'Oğlu' : P(k).gender === 'F' ? 'Kızı' : 'Çocuğu', dir: 'down', down: true })).join('') : cpAdd('child', 'Çocuk ekle')}</section>
+  </div>`;
+  const crumbs = CP.trail.slice(-8);
+  bar.innerHTML = `<button data-a="back" aria-label="Geri"${CP.trail.length ? '' : ' disabled'}>${ICON_BACK}</button>
+    <div class="cp-trail">${crumbs.map((t, i) => `<button data-jump="${CP.trail.length - crumbs.length + i}">${esc(P(t)?.first || '?')}</button><i>›</i>`).join('')}<b>${esc(p.first || fullName(p))}</b></div>
+    <button data-a="home" aria-label="Ağacın merkezine dön"${id === S.focus ? ' disabled' : ''}>${ICON_HOME}</button>`;
+  $('.cp-trail', bar).scrollLeft = 1e4;
+  box.scrollTop = 0;
+  const strip = $('.cp-strip', box), me = $('.cp-card.me', strip);
+  if (me) strip.scrollLeft = me.offsetLeft - (strip.clientWidth - me.offsetWidth) / 2;
+  cpAnimate(box, dir, from);
+}
+function cpAnimate(box, dir, from) {
+  if (!box.animate || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const ease = 'cubic-bezier(.2,.8,.2,1)', hero = $('.cp-hero', box);
+  if (from) { // the tapped card grows into the middle card
+    const r = hero.getBoundingClientRect(), k = Math.max(0.3, from.width / r.width);
+    hero.animate([{ transform: `translate(${from.left - r.left}px,${from.top - r.top}px) scale(${k})`, opacity: 0.35 }, { transform: 'none', opacity: 1 }], { duration: 460, easing: ease });
+  }
+  const [x, y] = { up: [0, -28], down: [0, 28], next: [34, 0], prev: [-34, 0] }[dir] || [0, 12];
+  [...$('.cp', box).children].filter(el => !from || el !== hero).forEach((el, i) =>
+    el.animate([{ transform: `translate(${x}px,${y}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 380, delay: Math.min(i, 6) * 22, easing: ease, fill: 'backwards' }));
+}
+function compassGo(id, fromEl = null, dir = '') {
+  if (!P(id)) return;
+  S.selected = id;
+  if (id === CP.cur) return;
+  if (CP.cur) { CP.trail.push(CP.cur); if (CP.trail.length > 40) CP.trail.shift(); }
+  CP.cur = id;
+  renderCompass(dir, fromEl?.getBoundingClientRect());
+  if ($('#card').classList.contains('open')) openCard(id);
+}
+function compassBack(to = CP.trail.length - 1) {
+  const id = CP.trail[to]; if (!id) return;
+  CP.trail.length = to; CP.cur = P(id) ? id : S.focus; S.selected = CP.cur;
+  renderCompass('prev');
+}
+function cpSibling(step) {
+  const order = birthOrder(CP.cur), next = order[order.indexOf(CP.cur) + step];
+  if (next) return compassGo(next, null, step > 0 ? 'next' : 'prev');
+  const h = $('#compass .cp-hero'); h?.classList.remove('nudge'); void h?.offsetWidth; h?.classList.add('nudge'); // nothing that way
+}
+function compassHome() { if (S.focus && CP.cur !== S.focus) compassGo(S.focus, null, 'up'); }
+{
+  const box = $('#compass');
+  box.addEventListener('click', e => {
+    if (performance.now() - CP.swipedAt < 350) return;
+    const go = e.target.closest('[data-go]');
+    if (go) return compassGo(go.dataset.go, go.closest('.cp-card') || null, go.dataset.dir);
+    const add = e.target.closest('[data-add]')?.dataset.add;
+    if (add) return openPersonForm(null, { relTo: CP.cur, rel: add });
+    const a = e.target.closest('[data-a]')?.dataset.a, id = CP.cur;
+    if (a === 'root') setFocus(id);
+    if (a === 'info') { S.selected = id; openCard(id); }
+    if (a === 'tree') { $('#viewSeg [data-view="tree"]').click(); select(id); }
+  });
+  // swipe the middle card sideways to step through brothers and sisters
+  let sx = null, sy = 0;
+  box.addEventListener('pointerdown', e => { sx = e.target.closest('.cp-hero') ? e.clientX : null; sy = e.clientY; });
+  box.addEventListener('pointerup', e => {
+    if (sx == null) return; const dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
+    if (Math.abs(dx) > 56 && Math.abs(dx) > 2 * Math.abs(dy)) { CP.swipedAt = performance.now(); cpSibling(dx < 0 ? 1 : -1); }
+  });
+  box.addEventListener('pointercancel', () => { sx = null; });
+  $('#cpBar').addEventListener('click', e => {
+    const j = e.target.closest('[data-jump]'); if (j) return compassBack(+j.dataset.jump);
+    const a = e.target.closest('[data-a]')?.dataset.a;
+    if (a === 'back') compassBack(); if (a === 'home') compassHome();
+  });
+}
+
 /* ================= UI ================= */
 function refreshAll() { for (const id of nodes.keys()) refreshNode(id); }
 function select(id) {
-  S.selected = id; hlDirty = true; refreshAll(); openCard(id); revealNode(id);
+  S.selected = id; hlDirty = true; refreshAll();
+  if (S.view === 'compass') return compassGo(id);
+  openCard(id); revealNode(id);
 }
 function measureSheet() { sheetPx = isPhone() && $('#card').classList.contains('open') ? Math.min($('#card').scrollHeight, innerHeight * 0.44) : 0; }
 // pan just enough that a picked person is not under the sheet or the toolbar
@@ -1709,7 +1950,9 @@ function revealNode(id) {
 function setFocus(id) {
   if (!P(id)) return;
   S.focus = id; S.selected = id; S.hover = null;
-  relayout(); openCard(id);
+  relayout();
+  if (S.view === 'compass') { CP.cur = id; renderCompass(); if ($('#card').classList.contains('open')) openCard(id); return; }
+  openCard(id);
   if (S.view === 'fan') renderFan();
 }
 const X_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
@@ -1818,11 +2061,18 @@ addEventListener('keydown', e => {
   const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) || document.activeElement.isContentEditable;
   if (typing || $('#modal').classList.contains('open') || !store.people.size || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === '/') { e.preventDefault(); $('#q').focus(); return; }
-  const fan = S.view === 'fan', tower = isTower();
+  if (S.view === 'compass') { // arrows walk the family: up to a parent, down to a child, sideways to siblings
+    const p = P(CP.cur); if (!p) return;
+    const go = { ArrowUp: () => (p.father || p.mother) && compassGo(p.father || p.mother, null, 'up'), ArrowDown: () => kids(CP.cur)[0] && compassGo(kids(CP.cur)[0], null, 'down'),
+      ArrowLeft: () => cpSibling(-1), ArrowRight: () => cpSibling(1), Backspace: () => compassBack(), f: compassHome, F: compassHome, '0': compassHome }[e.key];
+    if (go) { e.preventDefault(); go(); }
+    return;
+  }
+  const fan = S.view === 'fan';
   const act = {
     '+': () => zoomBy(0.75), '=': () => zoomBy(0.75), '-': () => zoomBy(1.33), '_': () => zoomBy(1.33),
     '0': () => fan ? fanReset() : frameView('all'), f: () => fan ? fanReset() : frameView('focus'), F: () => fan ? fanReset() : frameView('focus'),
-    ArrowLeft: () => fan ? fanPan(80, 0) : tower ? orbitBy(-0.35) : panBy(-1, 0), ArrowRight: () => fan ? fanPan(-80, 0) : tower ? orbitBy(0.35) : panBy(1, 0),
+    ArrowLeft: () => fan ? fanPan(80, 0) : panBy(-1, 0), ArrowRight: () => fan ? fanPan(-80, 0) : panBy(1, 0),
     ArrowUp: () => fan ? fanPan(0, 80) : panBy(0, 1), ArrowDown: () => fan ? fanPan(0, -80) : panBy(0, -1)
   }[e.key];
   if (act) { e.preventDefault(); act(); }
@@ -2061,7 +2311,8 @@ qIn.addEventListener('keydown', e => {
 resBox.addEventListener('click', e => { const r = e.target.closest('[data-id]'); if (r) pickResult(r.dataset.id); });
 function pickResult(id, focus) {
   resBox.classList.remove('open'); qIn.value = ''; qIn.blur();
-  if (focus || !nodes.has(id)) setFocus(id); else select(id);
+  if (S.view === 'compass' && !focus) select(id);
+  else if (focus || !nodes.has(id)) setFocus(id); else select(id);
 }
 document.addEventListener('click', e => { if (!e.target.closest('.search')) resBox.classList.remove('open'); if (!e.target.closest('.rel')) $('#exportMenu').classList.remove('open'); });
 
@@ -2070,7 +2321,9 @@ $('#viewSeg').onclick = e => {
   const b = e.target.closest('[data-view]'); if (!b || b.dataset.view === S.view) return;
   S.view = b.dataset.view; $$('#viewSeg button').forEach(x => x.classList.toggle('on', x === b));
   document.body.classList.toggle('view-fan', S.view === 'fan');
-  if (S.view === 'fan') { renderFan(); applyControls(); } else { relayout.fitted = null; relayout(); }
+  document.body.classList.toggle('view-compass', S.view === 'compass');
+  if (S.view === 'compass') { CP.cur = S.selected && P(S.selected) ? S.selected : S.focus; CP.trail = []; closeCard(); renderCompass(); applyControls(); }
+  else if (S.view === 'fan') { renderFan(); applyControls(); } else { relayout.fitted = null; relayout(); }
 };
 $('#scopeSeg').onclick = e => { const b = e.target.closest('[data-scope]'); if (!b) return; S.scope = b.dataset.scope; $$('#scopeSeg button').forEach(x => x.classList.toggle('on', x === b)); relayout(); };
 $('#importBtn').onclick = () => openImport();
@@ -2099,6 +2352,7 @@ $('#exportMenu').onclick = async e => {
 };
 function snapshotPng(stamp) {
   if (S.view === 'fan') { toast('Yelpaze için SVG dışa aktarımını kullan.'); return; }
+  if (S.view === 'compass') { toast('Görsel için Ağaç görünümüne geç.'); return; }
   renderer.render(scene, camera);
   const src = renderer.domElement, c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
   const g = c.getContext('2d'), k = src.width / innerWidth;
@@ -2129,7 +2383,8 @@ function afterChange() {
   if (!S.focus || !P(S.focus)) S.focus = store.people.size ? [...store.people.keys()][0] : null;
   relayout(true);
   if (S.view === 'fan') renderFan();
-  if (S.selected && P(S.selected)) openCard(S.selected);
+  if (S.view === 'compass') renderCompass();
+  if (S.selected && P(S.selected) && (S.view !== 'compass' || $('#card').classList.contains('open'))) openCard(S.selected);
 }
 $('#empty').addEventListener('click', e => {
   const a = e.target.closest('[data-act]')?.dataset.act;
