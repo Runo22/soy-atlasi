@@ -2,6 +2,8 @@
 
 Aile ağacını üç boyutlu bir takımyıldız olarak gösteren, tek dosyalık (`index.html`) ve sunucusuz bir uygulama. GitHub Gist üzerinde barınacak şekilde tasarlandı.
 
+**Canlı:** [gist.githack.com/Runo22/8170e1784aa0638e456f607e3b2ab31b/raw/index.html](https://gist.githack.com/Runo22/8170e1784aa0638e456f607e3b2ab31b/raw/index.html) · [Gist](https://gist.github.com/Runo22/8170e1784aa0638e456f607e3b2ab31b)
+
 ## Özellikler
 
 - **3B Takımyıldız görünümü** — her kuşak hafif kavisli tek bir sıraya dizilir: atalar yukarıda, torunlar aşağıda, baba tarafı solda, eşin ailesi sağda. Sürükleyerek döndürülebilir. Etiketler çakışmaz; ekrana sığmayanlar yakınlaştırınca görünür.
