@@ -55,7 +55,7 @@ body.view-fan #labels{display:none}
 body.empty .search,body.empty #viewSeg,body.empty #scopeSeg,body.empty #addBtn,body.empty #importBtn,body.empty .rel,body.empty #privacy,body.empty #hint,body.empty #card{display:none!important}
 
 /* labels */
-.lbl{pointer-events:auto;cursor:pointer;text-align:center;white-space:nowrap;padding:4px 9px;border-radius:10px;background:var(--lbl-bg);transition:background .2s,box-shadow .2s;user-select:none}
+.lbl{pointer-events:none;text-align:center;white-space:nowrap;padding:4px 9px;border-radius:10px;background:var(--lbl-bg);transition:background .2s,box-shadow .2s;user-select:none}
 .lbl b{display:block;font:600 12.5px/1.25 var(--sans);letter-spacing:-.005em;text-shadow:0 0 6px var(--lbl-halo)}
 .lbl span{display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .lbl em{display:block;font:500 10.5px/1.3 var(--sans);font-style:normal;color:var(--accent);letter-spacing:.01em}
@@ -75,10 +75,10 @@ body.empty .search,body.empty #viewSeg,body.empty #scopeSeg,body.empty #addBtn,b
 .brand h1{margin:0;font:700 17px/1 var(--display);letter-spacing:-.02em}
 .brand small{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
 .spacer{flex:1}
-.search{position:relative;width:min(320px,34vw)}
+.search{position:relative;z-index:2;width:min(320px,34vw)}
 .search input{width:100%;height:42px;padding:0 12px 0 38px;border-radius:12px;border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(18px);outline:none;box-shadow:var(--shadow)}
 .search input:focus{border-color:var(--accent-line);box-shadow:0 0 0 4px var(--accent-soft)}
-.search>svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint)}
+.search>svg{position:absolute;z-index:1;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint)}
 .search kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:500 11px var(--sans);color:var(--faint);border:1px solid var(--line2);border-radius:6px;padding:1px 6px}
 .results{position:absolute;top:calc(100% + 6px);left:0;right:0;max-height:50vh;overflow:auto;padding:6px;display:none;background:var(--panel-solid)}
 .results.open{display:block}
@@ -128,13 +128,14 @@ body.empty #nav{display:none}
 body.card-open #hint{display:none}
 
 /* card */
-#card{position:fixed;top:70px;right:14px;max-height:calc(100dvh - 84px);width:var(--card-w);overflow:auto;overscroll-behavior:contain;padding:16px 18px;z-index:6;background:var(--panel-solid);transform:translateX(calc(100% + 30px));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+#card{position:fixed;top:70px;right:14px;max-height:calc(100dvh - 84px);width:var(--card-w);overflow:auto;overflow-x:hidden;overscroll-behavior:contain;padding:16px 18px;z-index:6;background:var(--panel-solid);transform:translateX(calc(100% + 30px));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 #card.open{transform:none}
 .card-head{display:flex;gap:14px;align-items:center}
 .avatar{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font:700 16px var(--display);color:#fff;letter-spacing:-.02em}
 .card-head h2{margin:0;font:700 18px/1.2 var(--display);letter-spacing:-.02em;padding-right:24px}
 .card-head p{margin:3px 0 0;color:var(--muted);font-size:13px}
-.x{position:absolute;top:12px;right:12px;border:0;background:transparent;color:var(--muted);width:32px;height:32px;border-radius:9px}
+.x{position:absolute;top:12px;right:12px;border:0;background:transparent;color:var(--muted);width:32px;height:32px;border-radius:9px;display:grid;place-items:center;padding:0}
+.x svg,td.del svg{width:16px;height:16px}
 .x:hover{background:var(--hover);color:var(--text)}
 .kin{margin:14px 0 4px;padding:9px 12px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--accent-line)}
 .kin b{font:700 15px var(--display);color:var(--accent);letter-spacing:-.01em}
@@ -216,6 +217,7 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
 .fan-empty:hover{fill:var(--accent-soft)}
 .fan-title{fill:var(--text);font-family:var(--display);font-weight:700}
 .fan-sub{fill:var(--muted);font-family:var(--sans)}
+.fan-legend{transition:opacity .2s}
 
 @media (max-width:1240px){
   .brand small{display:none}
@@ -242,14 +244,25 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
   .btn.icon,#importBtn,#exportBtn,#addBtn{width:40px}
   .seg{height:40px}.seg button{height:32px;padding:0 9px}
   .search kbd{display:none}
+  .search input,.form input,.form select,.form textarea,.input{font-size:16px}
+  .results{position:fixed;top:58px;left:10px;right:10px;max-height:60dvh}
   #privacy .chip,.legend{display:none}
   body.card-open #privacy{display:none}
   #card{top:auto;left:0;right:0;width:auto;bottom:0;max-height:44dvh;border-radius:20px 20px 0 0;padding:6px 16px calc(16px + env(safe-area-inset-bottom));transform:translateY(calc(100% + 20px));transition:transform .35s cubic-bezier(.2,.8,.2,1),max-height .3s ease}
   #card.open{transform:none}
   #card.expanded{max-height:86dvh}
-  .grab{display:flex;justify-content:center;position:sticky;top:-6px;margin:-6px -16px 4px;padding:10px 0 8px;background:var(--panel-solid);border:0;width:calc(100% + 32px);z-index:1;cursor:grab}
+  .grab{display:flex;justify-content:center;position:sticky;top:-6px;margin:-6px -16px 2px;padding:12px 0 14px;background:var(--panel-solid);border:0;width:calc(100% + 32px);z-index:1;cursor:grab;touch-action:none}
+  #card .x{top:22px;right:10px;z-index:2}
   .grab i{width:38px;height:4px;border-radius:4px;background:var(--line2)}
   body.card-open #nav{display:none}
+  /* keep the names behind the toolbar from bleeding through */
+  #top::before{content:"";position:fixed;left:0;right:0;top:0;height:118px;background:linear-gradient(var(--bg) 62%,transparent);pointer-events:none;z-index:-1}
+  body.empty #top::before{display:none}
+  #nav{flex-direction:row;right:10px;bottom:10px;padding:3px}
+  #nav button{width:38px;height:36px}
+  #nav span{width:1px;height:auto;margin:6px 2px}
+  #privacy{left:10px;bottom:10px;max-width:calc(100vw - 200px)}
+  .info{padding:9px 11px;min-height:42px;align-content:center}
   #toast{bottom:auto;top:112px;transform:translateX(-50%) translateY(-12px)}
   .pillars{grid-template-columns:1fr}
   #empty{align-items:flex-start;overflow:auto;padding:64px 12px 12px}
@@ -1181,10 +1194,6 @@ function makeNode(id) {
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: nodeTex(p), transparent: true, depthWrite: false, blending: blend() }));
   sprite.userData.id = id;
   const el = document.createElement('div'); el.className = 'lbl';
-  el.addEventListener('click', e => { e.stopPropagation(); select(id); });
-  el.addEventListener('dblclick', e => { e.stopPropagation(); setFocus(id); });
-  el.addEventListener('pointerenter', () => { S.hover = id; hlDirty = true; });
-  el.addEventListener('pointerleave', () => { if (S.hover === id) { S.hover = null; hlDirty = true; } });
   const label = new CSS2DObject(el); label.center.set(0.5, -0.35); sprite.add(label);
   scene.add(sprite);
   const n = { sprite, label, el, pos: new THREE.Vector3(), target: new THREE.Vector3(), alpha: 0, talpha: 1, scale: 1 };
@@ -1245,6 +1254,10 @@ function relayout(keepCamera) {
   updateChrome();
 }
 let camTween = null;
+// phones: the bottom sheet hides the lower part of the screen, so the picture shifts up by half of it
+let sheetPx = 0, viewShift = 0;
+const isPhone = () => innerWidth <= 900;
+const coarse = matchMedia('(pointer: coarse)').matches;
 const pendingZoom = { f: 1, at: new THREE.Vector2() }; // wheel zoom still to be applied, eased in per frame
 // 'auto': readable zoom around the focus (or everything if it fits); 'all': the whole tree; 'focus': back to the focus
 function frameView(mode = 'auto') {
@@ -1288,7 +1301,8 @@ function applyControls() {
   controls.zoomToCursor = true; controls.screenSpacePanning = true;
   controls.mouseButtons = tower ? { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN }
     : { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
-  controls.touches = tower ? { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN } : { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_PAN };
+  controls.touches = { ONE: tower ? THREE.TOUCH.ROTATE : THREE.TOUCH.PAN, TWO: null }; // two fingers: see pinch below
+  controls.rotateSpeed = isPhone() ? 0.55 : 1;
   controls.minPolarAngle = tower ? 0.3 : Math.PI / 2 - 0.6; controls.maxPolarAngle = tower ? Math.PI - 0.3 : Math.PI / 2 + 0.4;
   controls.minAzimuthAngle = tower ? -Infinity : -0.8; controls.maxAzimuthAngle = tower ? Infinity : 0.8;
   const hints = {
@@ -1368,6 +1382,11 @@ function animate(now = performance.now()) {
   const dt = Math.max(0, Math.min(0.5, (now - lastT) / 1000)); lastT = Math.max(lastT, now);
   const ease = k => 1 - Math.exp(-dt * k);
   if (S.view === 'fan') return;
+  if (Math.abs(sheetPx / 2 - viewShift) > 0.5) {
+    viewShift += (sheetPx / 2 - viewShift) * ease(9);
+    if (!sheetPx && viewShift < 0.5) { viewShift = 0; camera.clearViewOffset(); }
+    else camera.setViewOffset(innerWidth, innerHeight, 0, viewShift, innerWidth, innerHeight);
+  }
   if (camTween) {
     camTween.t = Math.min(1, camTween.t + dt / (camTween.dur || 1.1));
     const e = 1 - (1 - camTween.t) ** 3;
@@ -1401,7 +1420,7 @@ function animate(now = performance.now()) {
     n.sprite.material.opacity = n.alpha * dim * n.face;
     const o = (n.show ? 1 : 0) * (hl && !hl.has(id) ? 0.35 : 1) * n.alpha;
     n.lo = o < (n.lo ?? 0) ? Math.max(o, (n.lo ?? 0) - ease(30)) : (n.lo ?? 0) + (o - (n.lo ?? 0)) * ease(12);
-    n.el.style.opacity = n.lo.toFixed(2); n.el.style.pointerEvents = n.lo > 0.5 ? 'auto' : 'none';
+    n.el.style.opacity = n.lo.toFixed(2);
     n.label.visible = n.lo > 0.02 || n.show;
   }
   if (frame % 4 === 0) declutter(hl);
@@ -1452,6 +1471,12 @@ function declutter(hl) {
 const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
 let downAt = null;
 function pick(e) {
+  // names first: they are the big, readable targets (and are drawn above the dots)
+  for (const [id, n] of nodes) {
+    if (!n.show) continue;
+    const r = n.el.getBoundingClientRect();
+    if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return id;
+  }
   mouse.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   ray.setFromCamera(mouse, camera);
   const hit = ray.intersectObjects([...nodes.values()].filter(n => n.alpha > 0.3).map(n => n.sprite))[0];
@@ -1459,16 +1484,25 @@ function pick(e) {
 }
 const canvas = renderer.domElement;
 canvas.style.cursor = 'grab';
-canvas.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; canvas.style.cursor = 'grabbing'; });
+let ptrType = 'mouse', lastTap = null;
+canvas.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; ptrType = e.pointerType; canvas.style.cursor = 'grabbing'; });
 canvas.addEventListener('pointerup', e => {
   canvas.style.cursor = S.hover ? 'pointer' : 'grab';
-  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
-  const id = pick(e); if (id) select(id); else if (S.selected) { S.selected = null; closeCard(); hlDirty = true; refreshAll(); }
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > (e.pointerType === 'mouse' ? 5 : 12)) return;
+  const id = pick(e);
+  if (e.pointerType !== 'mouse') { // double tap = double click
+    const t = performance.now(), dbl = lastTap && t - lastTap.t < 350 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 40;
+    const first = lastTap?.id; // the first tap may already be sliding that person into view
+    lastTap = dbl ? null : { t, x: e.clientX, y: e.clientY, id };
+    if (dbl) return first || id ? setFocus(first || id) : wheelZoom(0.5, ndc(e));
+  }
+  if (id) select(id); else if (S.selected) { S.selected = null; closeCard(); hlDirty = true; refreshAll(); }
 });
 // double-click a person to centre the tree on them, empty space to zoom in there
-canvas.addEventListener('dblclick', e => { const id = pick(e); if (id) setFocus(id); else wheelZoom(0.5, ndc(e)); });
+canvas.addEventListener('dblclick', e => { if (ptrType !== 'mouse') return; const id = pick(e); if (id) setFocus(id); else wheelZoom(0.5, ndc(e)); });
+canvas.addEventListener('pointerleave', () => { if (S.hover) { S.hover = null; hlDirty = true; } });
 canvas.addEventListener('pointermove', e => {
-  if (e.buttons || frame % 2) return;
+  if (e.buttons || e.pointerType !== 'mouse' || frame % 2) return;
   const id = pick(e); if (id !== S.hover) { S.hover = id; hlDirty = true; canvas.style.cursor = id ? 'pointer' : 'grab'; }
 });
 
@@ -1494,6 +1528,28 @@ function panPixels(dx, dy) {
     .addScaledVector(new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1), -dy * k);
   camera.position.add(off); controls.target.add(off);
 }
+// Two-finger pinch: OrbitControls zooms touch toward a stale mouse position, so it is done here instead:
+// zoom about the point between the fingers and let that point follow them.
+{
+  const pts = new Map(); let last = null;
+  const mid = () => { const [a, b] = [...pts.values()]; return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, d: Math.hypot(a.x - b.x, a.y - b.y) || 1 }; };
+  canvas.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'touch') return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2) { last = mid(); camTween = null; downAt = null; }
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size !== 2 || !last) return;
+    const m = mid();
+    zoomAt(last.d / m.d, ndc({ clientX: m.x, clientY: m.y }));
+    if (isTower()) panPixels(0, last.y - m.y); else panPixels(last.x - m.x, last.y - m.y);
+    last = m; hlDirty = true;
+  });
+  const lift = e => { pts.delete(e.pointerId); if (pts.size < 2) last = null; };
+  canvas.addEventListener('pointerup', lift); canvas.addEventListener('pointercancel', lift);
+}
 $('#stage').addEventListener('wheel', e => {
   if (S.view === 'fan' || !store.people.size) return;
   e.preventDefault(); e.stopPropagation(); camTween = null;
@@ -1505,7 +1561,8 @@ $('#stage').addEventListener('wheel', e => {
   if (dy) wheelZoom(Math.exp(dy * 0.0016), ndc(e));
 }, { capture: true, passive: false });
 addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  camera.aspect = innerWidth / innerHeight; measureSheet();
+  if (viewShift) camera.setViewOffset(innerWidth, innerHeight, 0, viewShift, innerWidth, innerHeight); else camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight); labelRenderer.setSize(innerWidth, innerHeight);
   if (S.view === 'fan') renderFan();
 });
@@ -1573,12 +1630,15 @@ function fanSvg(focus) {
   desc(focus, 1, D0, D1);
   const ext = R0 + G * W + 30;
   const center = `<circle r="${R0 - 6}" fill="${TH.accent}"/><text text-anchor="middle" class="fan-txt" font-size="15" font-weight="700" dy="-4" fill="#fff" style="fill:#fff">${esc(fmt(p0, 16))}</text><text text-anchor="middle" class="fan-txt" font-size="11" dy="13" opacity=".85" style="fill:#fff">${esc(lifespan(p0))}</text>`;
-  const legend = `<text x="${-ext + 20}" y="${-ext + 40}" class="fan-title" font-size="20" fill="${TH.text}">${esc(fullName(p0))}</text><text x="${-ext + 20}" y="${-ext + 60}" class="fan-sub" font-size="12" fill="${TH.muted}">Ata yelpazesi · baba tarafı mavi, anne tarafı mercan, torunlar yeşil</text>`;
+  const legend = `<g class="fan-legend"><text x="${-ext + 20}" y="${-ext + 40}" class="fan-title" font-size="20" fill="${TH.text}">${esc(fullName(p0))}</text><text x="${-ext + 20}" y="${-ext + 60}" class="fan-sub" font-size="12" fill="${TH.muted}">Ata yelpazesi · baba tarafı mavi, anne tarafı mercan, torunlar yeşil</text></g>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-ext} ${-ext} ${ext * 2} ${ext * 2}" preserveAspectRatio="xMidYMid meet"><g class="fan-root">${parts.join('')}${center}</g>${legend}</svg>`;
 }
 // fan pan/zoom: transform of the chart group, kept while the focus stays the same
 let fanT = { k: 1, x: 0, y: 0, focus: null };
-const fanApply = () => $('#fan .fan-root')?.setAttribute('transform', `translate(${fanT.x} ${fanT.y}) scale(${fanT.k})`);
+const fanApply = () => {
+  $('#fan .fan-root')?.setAttribute('transform', `translate(${fanT.x} ${fanT.y}) scale(${fanT.k})`);
+  const lg = $('#fan .fan-legend'); if (lg) lg.style.opacity = fanT.k > 1.05 ? 0 : 1; // the title would sit on top of the zoomed fan
+};
 function fanZoom(f, px = 0, py = 0) {
   const k = Math.max(0.5, Math.min(6, fanT.k / f)), r = k / fanT.k;
   fanT.x = px - (px - fanT.x) * r; fanT.y = py - (py - fanT.y) * r; fanT.k = k; fanApply();
@@ -1630,7 +1690,21 @@ function renderFan() {
 /* ================= UI ================= */
 function refreshAll() { for (const id of nodes.keys()) refreshNode(id); }
 function select(id) {
-  S.selected = id; hlDirty = true; refreshAll(); openCard(id);
+  S.selected = id; hlDirty = true; refreshAll(); openCard(id); revealNode(id);
+}
+function measureSheet() { sheetPx = isPhone() && $('#card').classList.contains('open') ? Math.min($('#card').scrollHeight, innerHeight * 0.44) : 0; }
+// pan just enough that a picked person is not under the sheet or the toolbar
+function revealNode(id) {
+  const n = nodes.get(id); if (!n || !sheetPx || S.view === 'fan') return;
+  const v = n.pos.clone().project(camera), W = innerWidth, H = innerHeight;
+  const x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H - (sheetPx / 2 - viewShift);
+  const top = 130, bottom = H - sheetPx - 70;
+  const dx = x < 60 || x > W - 60 ? x - W / 2 : 0, dy = y < top || y > bottom ? y - (top + bottom) / 2 : 0;
+  if (!dx && !dy) return;
+  const k = controls.getDistance() * 2 * Math.tan(camera.fov * Math.PI / 360) / H;
+  const off = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0).multiplyScalar(dx * k)
+    .addScaledVector(new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1), -dy * k);
+  camTween = { from: controls.target.clone(), to: controls.target.clone().add(off), t: 0, dur: 0.45, fromPos: camera.position.clone(), toPos: camera.position.clone().add(off) };
 }
 function setFocus(id) {
   if (!P(id)) return;
@@ -1638,7 +1712,8 @@ function setFocus(id) {
   relayout(); openCard(id);
   if (S.view === 'fan') renderFan();
 }
-function closeCard() { $('#card').classList.remove('open', 'expanded'); document.body.classList.remove('card-open'); }
+const X_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+function closeCard() { $('#card').classList.remove('open', 'expanded'); document.body.classList.remove('card-open'); sheetPx = 0; }
 function pchip(id, sub) {
   const p = P(id);
   return `<button class="pchip" data-goto="${id}"><i style="background:${GCOL[p.gender]};${p.inferred ? 'background:transparent;border:1.5px solid ' + GCOL[p.gender] : ''}"></i>${esc(fullName(p))}${sub ? ` <small>${esc(sub)}</small>` : ''}</button>`;
@@ -1653,7 +1728,7 @@ function openCard(id) {
   const yr = x => lifespan(P(x));
   $('#card').innerHTML = `
     <button class="grab" data-grab aria-label="Kartı büyüt veya küçült"><i></i></button>
-    <button class="x" data-close aria-label="Kapat">✕</button>
+    <button class="x" data-close aria-label="Kapat">${X_ICON}</button>
     <div class="card-head">
       <div class="avatar" style="background:${GCOL[p.gender]};${p.alive === false ? 'filter:saturate(.45) brightness(.85)' : ''}">${esc(initials(p))}</div>
       <div><h2>${esc(fullName(p))}${p.alive === false ? ' <span style="color:var(--muted);font-size:16px">†</span>' : ''}</h2>
@@ -1692,20 +1767,32 @@ function openCard(id) {
       <button class="btn sm danger" data-a="delete">Kişiyi sil</button>
     </div>`;
   $('#card').classList.add('open'); document.body.classList.add('card-open');
-  $('#card').scrollTop = 0;
+  $('#card').scrollTop = 0; measureSheet();
 }
-// mobile bottom sheet: tap the handle to expand/collapse, swipe it up/down
+// mobile bottom sheet: the handle follows the finger; tap toggles size, drag up grows, drag down shrinks or closes
 {
-  let y0 = null;
-  $('#card').addEventListener('pointerdown', e => { if (e.target.closest('[data-grab]')) y0 = e.clientY; });
-  addEventListener('pointerup', e => {
-    if (y0 == null) return; const dy = e.clientY - y0; y0 = null;
-    const c = $('#card');
-    if (Math.abs(dy) < 8) c.classList.toggle('expanded');
-    else if (dy < 0) c.classList.add('expanded');
-    else if (c.classList.contains('expanded')) c.classList.remove('expanded');
-    else { S.selected = null; closeCard(); hlDirty = true; refreshAll(); }
+  const c = $('#card');
+  let y0 = null, dy = 0, h0 = 0;
+  c.addEventListener('pointerdown', e => {
+    const g = e.target.closest('[data-grab]'); if (!g) return;
+    y0 = e.clientY; dy = 0; h0 = c.offsetHeight; c.style.transition = 'none'; g.setPointerCapture(e.pointerId);
   });
+  c.addEventListener('pointermove', e => {
+    if (y0 == null) return; dy = e.clientY - y0;
+    if (dy < 0) { c.style.maxHeight = Math.min(h0 - dy, innerHeight * 0.86) + 'px'; c.style.transform = ''; }
+    else { c.style.maxHeight = ''; c.style.transform = `translateY(${dy}px)`; }
+  });
+  const end = e => {
+    if (y0 == null) return; y0 = null;
+    c.style.transition = c.style.maxHeight = c.style.transform = '';
+    if (e.type === 'pointercancel') return;
+    const big = c.classList.contains('expanded');
+    if (Math.abs(dy) < 8) c.classList.toggle('expanded');
+    else if (dy < -30) c.classList.add('expanded');
+    else if (dy > 60 && big && dy < h0 * 0.55) c.classList.remove('expanded');
+    else if (dy > 60) { S.selected = null; closeCard(); hlDirty = true; refreshAll(); }
+  };
+  c.addEventListener('pointerup', end); c.addEventListener('pointercancel', end);
 }
 $('#card').addEventListener('click', e => {
   const id = S.selected;
@@ -1721,7 +1808,7 @@ $('#card').addEventListener('click', e => {
 
 // modal helpers
 function openModal(html, narrow) {
-  const d = $('#dialog'); d.className = 'dialog glass' + (narrow ? ' narrow' : ''); d.innerHTML = `<button class="x" data-close aria-label="Kapat">✕</button>` + html;
+  const d = $('#dialog'); d.className = 'dialog glass' + (narrow ? ' narrow' : ''); d.innerHTML = `<button class="x" data-close aria-label="Kapat">${X_ICON}</button>` + html;
   $('#modal').classList.add('open'); return d;
 }
 function closeModal() { $('#modal').classList.remove('open'); $('#dialog').innerHTML = ''; }
@@ -1786,7 +1873,7 @@ function openPersonForm(id, ctx = {}) {
       <label class="full">Notlar<textarea name="notes">${esc(v.notes)}</textarea></label>
     </form>
     <div class="row"><button class="btn primary" id="pfSave">${p ? 'Kaydet' : 'Ekle'}</button><button class="btn ghost" data-close>Vazgeç</button></div>`);
-  const f = $('#pf', d); f.first.focus();
+  const f = $('#pf', d); if (!coarse) f.first.focus(); // on touch screens the keyboard would cover the form
   const syncDeath = () => { $('#deathRow', d).hidden = f.alive.value !== '0'; };
   f.alive.addEventListener('change', syncDeath); syncDeath();
   const save = () => {
@@ -1834,7 +1921,7 @@ function openMergePicker(id) {
       .sort((a, b) => (compatible(b, p) - compatible(a, p))).slice(0, 60)
       .map(x => `<div class="res" data-m="${x.id}"><i style="width:10px;height:10px;border-radius:50%;background:${GCOL[x.gender]}"></i>${esc(fullName(x))}<small>${esc(lifespan(x))}</small></div>`).join('');
   };
-  $('#mq', d).oninput = draw; draw(); $('#mq', d).focus();
+  $('#mq', d).oninput = draw; draw(); if (!coarse) $('#mq', d).focus();
   $('#ml', d).onclick = e => {
     const m = e.target.closest('[data-m]'); if (!m) return;
     const keep = mergePeople(id, m.dataset.m); consolidate(); closeModal(); afterChange(); select(P(keep) ? keep : id); toast('Kayıtlar birleştirildi');
@@ -1914,7 +2001,7 @@ function drawReview() {
     return `<div class="review" data-b="${bi}"><h4>${esc(b.label)}</h4>
       <p class="sub" style="margin:0 0 8px">${b.recs.length ? `${b.recs.length} kişi bulundu · belge sahibi: <b style="color:var(--text)">${esc(self ? self.first + ' ' + self.last : '?')}</b>. Hatalı hücreleri tıklayıp düzeltebilirsin.` : 'Kişi bulunamadı.'}</p>
       ${b.recs.length ? `<div class="tbl-wrap"><table><thead><tr>${COLS.map(c => `<th>${c[1]}</th>`).join('')}<th></th></tr></thead><tbody>
-      ${b.recs.map((r, ri) => `<tr data-r="${ri}">${COLS.map(c => `<td contenteditable="plaintext-only" spellcheck="false" data-k="${c[0]}">${esc(show(r[c[0]]))}</td>`).join('')}<td class="del" title="Satırı çıkar">✕</td></tr>`).join('')}
+      ${b.recs.map((r, ri) => `<tr data-r="${ri}">${COLS.map(c => `<td contenteditable="plaintext-only" spellcheck="false" data-k="${c[0]}">${esc(show(r[c[0]]))}</td>`).join('')}<td class="del" title="Satırı çıkar">${X_ICON}</td></tr>`).join('')}
       </tbody></table></div>` : ''}
       ${b.raw ? `<details><summary>Belgeden okunan ham metin</summary><pre>${esc(b.raw.slice(0, 20000))}</pre></details>` : ''}</div>`;
   }).join('') + (pending.some(b => b.recs.length) ? `<div class="row"><button class="btn primary" id="commit">Ağaca ekle</button><span class="note" style="margin:0">Aynı kişiler ad, doğum tarihi ve ebeveyn adlarıyla eşleştirilir.</span></div>` : '');
@@ -2034,7 +2121,7 @@ function updateChrome() {
   if (n) {
     const ys = [...store.people.values()].map(p => yearOf(p.birthDate)).filter(Boolean);
     const gs = [...layout.gen.values()];
-    $('#stats').innerHTML = `<b>${n}</b> kişi · <b>${gs.length ? Math.max(...gs) - Math.min(...gs) + 1 : 0}</b> kuşak görünüyor${ys.length ? ` · <b>${Math.min(...ys)}</b>–<b>${Math.max(...ys)}</b>` : ''} · <b>${store.sources.size}</b> belge`;
+    $('#stats').innerHTML = `<b>${n}</b> kişi · <b>${gs.length ? Math.max(...gs) - Math.min(...gs) + 1 : 0}</b> kuşak<span class="long"> görünüyor${ys.length ? ` · <b>${Math.min(...ys)}</b>–<b>${Math.max(...ys)}</b>` : ''}</span> · <b>${store.sources.size}</b> belge`;
   }
 }
 function afterChange() {

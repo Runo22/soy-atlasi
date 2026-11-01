@@ -10,7 +10,7 @@ Aile ağacını üç boyutlu bir takımyıldız olarak gösteren, tek dosyalık 
 - **Kule 3B görünümü** — aynı ağaç dönen bir silindirin yüzeyine sarılır. Döndürdükçe arka taraftaki dallar öne gelir, arkada kalanlar soluklaşır.
 - **Aydınlık / koyu tema** — varsayılan aydınlık, tek tıkla koyu.
 - **Fare ve trackpad** — tekerlek imlecin olduğu yere yumuşakça yakınlaşır; Shift+tekerlek ya da trackpad'de yatay kaydırma yana kaydırır (Kule'de döndürür); trackpad'de sıkıştırma yakınlaştırır. Ağaç'ta sürükleyince kayar, Kule'de döner. Boş alana çift tık o noktaya yakınlaştırır, kişiye çift tık onu merkeze alır.
-- **Gezinme düğmeleri ve mobil** — sağ altta yakınlaştır/uzaklaştır, tümünü gör, merkeze dön. Mobilde tek parmak kaydırır/döndürür, iki parmak yakınlaştırır. Kişi kartı mobilde alt sayfa olarak açılır.
+- **Gezinme düğmeleri ve mobil** — sağ altta yakınlaştır/uzaklaştır, tümünü gör, merkeze dön. Mobilde tek parmak (isimlerin üstünden de) kaydırır/döndürür, iki parmak parmakların arasına yakınlaştırır, çift dokunuş yakınlaştırır ya da kişiyi merkeze alır. Kişi kartı alt sayfa olarak açılır: tutamaçtan yukarı çekince büyür, aşağı çekince kapanır; seçilen kişi kartın üstünde görünür kalır.
 - **Klavye** — `+` / `-` yakınlaştır, `0` tümünü gör, `F` merkeze dön, ok tuşları kaydır (Kule'de döndür), `/` ara, `Esc` kapat.
 - **Yelpaze görünümü** — 7 kuşağa kadar ata yelpazesi ve torun yayı. Boş dilime tıklayarak eksik ebeveyn eklenebilir. SVG olarak dışa aktarılır.
 - **e-Devlet içe aktarma** — "Alt-Üst Soy Bilgisi Sorgulama" PDF'i tarayıcıda okunur. İçe aktarmadan önce tablo gözden geçirilip düzeltilebilir.
