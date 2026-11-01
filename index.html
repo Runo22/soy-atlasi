@@ -181,6 +181,12 @@ th{position:sticky;top:0;background:var(--sunken);text-align:left;font-weight:60
 td{padding:6px 8px;border-top:1px solid var(--line);white-space:nowrap}
 td[contenteditable]:focus{outline:1.5px solid var(--accent);background:var(--accent-soft)}
 td.del{width:24px;color:var(--faint);cursor:pointer}td.del:hover{color:var(--bad)}
+tr.bad td{background:color-mix(in srgb,var(--bad) 9%,transparent)}
+tr.odd td{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+td.iss{font-size:11.5px;color:var(--muted);white-space:normal;min-width:118px;max-width:150px}
+tr.bad td.iss{color:var(--bad)}
+.rv-warn{margin:0 0 8px;padding:8px 11px;border-radius:10px;font-size:12.5px;background:var(--accent-soft);border:1px solid var(--accent-line);color:var(--text)}
+.rv-warn.bad{background:color-mix(in srgb,var(--bad) 9%,transparent);border-color:color-mix(in srgb,var(--bad) 35%,transparent)}
 details{margin-top:8px;font-size:12px;color:var(--muted)}
 details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;border-radius:8px;white-space:pre-wrap}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px}
@@ -743,8 +749,9 @@ function kinTerm(focusId, id) {
 function relationPath(t) {
   const s = lower(t);
   if (!s || /kendi/.test(s)) return [];
-  const out = [];
-  for (const w of s.split(/[\s,]+/)) {
+  const out = [], ws = s.split(/[\s,]+/);
+  for (const [i, w] of ws.entries()) {
+    if (/^(kız|kiz|erkek)$/.test(w) && /^karde[şs]/.test(ws[i + 1] || '')) continue;
     if (w.startsWith('baba')) out.push('F');
     else if (w.startsWith('anne') || w.startsWith('ana')) out.push('M');
     else if (w.startsWith('oğl') || w.startsWith('ogl')) out.push('S');
@@ -756,6 +763,25 @@ function relationPath(t) {
   return out;
 }
 
+// Rows that would mislead the tree are held back until fixed; the rest only warn.
+const BLOCKING = ['Ad okunamadı', 'Yakınlık boş', 'Yakınlık tanınmadı', 'İki satır birleşmiş olabilir'];
+function recordIssues(r, withRelations = true) {
+  const out = [], rel = lower(r.relation || '').trim();
+  if (!r.first) out.push('Ad okunamadı');
+  if (withRelations) {
+    if (!rel) out.push('Yakınlık boş');
+    else if (!/kendi/.test(rel) && !relationPath(rel).length) out.push('Yakınlık tanınmadı');
+    else {
+      // in a real chain every word but the last is genitive: "Babasının Annesi"; "Babası Annesi" is two rows run together
+      const ws = rel.split(/\s+/).filter((w, i, a) => !(/^(kız|kiz|erkek)$/.test(w) && /^karde[şs]/.test(a[i + 1] || '')));
+      if (ws.length > 1 && ws.slice(0, -1).some(w => !/n[ıiuü]n$/.test(w))) out.push('İki satır birleşmiş olabilir');
+    }
+  }
+  if (/\d/.test([r.first, r.last, r.fatherName, r.motherName].join(''))) out.push('Adda rakam var');
+  if (/\d{4}/.test(r.birthPlace || '')) out.push('Hücrede iki tarih var; iki satır birleşmiş olabilir');
+  return out;
+}
+const isBlocked = (r, withRelations) => recordIssues(r, withRelations).some(i => BLOCKING.includes(i));
 // raw columns -> normalized record
 function normalizeRecord(raw) {
   raw = Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, typeof v === 'string' ? fixTurkish(v) : v]));
@@ -789,7 +815,10 @@ function buildFromRecords(recs, sourceId) {
   // (say the mother's father) while listing people above it; with `bridge` an unnamed placeholder keeps them attached.
   function ensure(key, bridge = false) {
     if (byPath.has(key)) return byPath.get(key)[0];
-    if (key === '') return null;
+    if (key === '') { // the owner's own row was unreadable: keep their parents and children together anyway
+      if (!bridge) return null;
+      const o = mk({ first: '', inferred: true }); reg('', o); return o;
+    }
     const last = key.slice(-1), child = ensure(key.slice(0, -1), bridge);
     if (!child || !'FM'.includes(last)) return null;
     const name = last === 'F' ? child.fatherName : child.motherName;
@@ -850,10 +879,9 @@ function buildFromRecords(recs, sourceId) {
 
 function importRecords(recs, label) {
   const valid = recs.filter(r => r.first);
-  if (!valid.some(r => !relationPath(r.relation).length)) {
-    // nobody marked as "Kendisi": treat the first row as the document owner
-    if (valid[0]) valid[0].relation = 'Kendisi'; else return null;
-  }
+  if (!valid.length) return null;
+  // a table without any relation column: treat the first row as the document owner
+  if (!valid.some(r => r.relation)) valid[0].relation = 'Kendisi';
   const src = { id: 's' + (store.sources.size + 1) + Date.now().toString(36), label, at: new Date().toISOString(), count: valid.length };
   store.sources.set(src.id, src);
   const existing = [...store.people.values()];
@@ -887,14 +915,27 @@ async function pdfItems(file) {
     cMapUrl: PDFJS + 'cmaps/', cMapPacked: true, standardFontDataUrl: PDFJS + 'standard_fonts/' }).promise;
   const pages = [];
   for (let i = 1; i <= doc.numPages; i++) {
-    const page = await doc.getPage(i);
-    const vp = page.getViewport({ scale: 1 });
-    const tc = await page.getTextContent();
-    pages.push({ width: vp.width, items: tc.items.filter(it => it.str && it.str.trim()).map(it => ({
-      s: fixTurkish(it.str).trim(), x: it.transform[4], y: it.transform[5], w: it.width || it.str.length * 4, h: Math.abs(it.transform[3]) || 8 })) });
+    try { // one damaged page should not cost the rest of the document
+      const page = await doc.getPage(i);
+      const vp = page.getViewport({ scale: 1 });
+      const tc = await page.getTextContent();
+      pages.push({ width: vp.width, items: tc.items.map(it => ({ ...it, str: (it.str || '').replace(/[\u0000-\u001f\u007f-\u009f\ue000-\uf8ff\ufffd]/g, '') }))
+        .filter(it => it.str.trim() && it.transform?.length >= 6).map(it => ({
+          s: fixTurkish(it.str).trim(), x: it.transform[4], y: it.transform[5], w: it.width || it.str.length * 4, h: Math.abs(it.transform[3]) || 8 })) });
+    } catch (err) { console.warn('page', i, err); pages.push({ width: 595, items: [], failed: true }); }
   }
   await doc.destroy();
   return pages;
+}
+// For bug reports: the table's geometry with names, places and numbers masked (Ahmet -> Aaaaa, 1978 -> 0000).
+// Column headings and relation words stay, they are the same in everyone's document.
+const KEEP_WORD = /^(kendisi|baba(s[ıi](n[ıi]n)?)?|anne(si(nin)?)?|ana(s[ıi](n[ıi]n)?)?|oğlu(nun)?|kız(ı(nın)?)?|erkek|eşi(nin)?|kardeşi(nin)?|çocuğu(nun)?|e|k|sağ|ölü|evli|bekar|bekâr|dul|boşanmış)$/;
+const HEAD_WORD = /^(sıra|sira|no|cinsiyet[iı]?|cinsiyeti|yakınlı[ğk][ıi]?|yakınlık|ad[ıi]|soyad[ıi]|doğum|yeri|ve|tarihi?|nüfusa|kayıtlı|olduğu|il|ilçe|mahalle|köy|il-ilçe-mahalle\/köy|cilt|hane|bsn|cilt-hane-bsn|medeni|hal[iı]|durumu?|ölüm)$/;
+function layoutReport(pages) {
+  const keep = w => { const k = lower(w).replace(/[.:()]/g, ''); return KEEP_WORD.test(k) || HEAD_WORD.test(k); };
+  const mask = s => s.split(/(\s+)/).map(w => keep(w) ? w : w.replace(/\p{Lu}/gu, 'A').replace(/\p{Ll}/gu, 'a').replace(/\d/g, '0')).join('');
+  return JSON.stringify({ app: 'soy-atlasi-layout', v: 1, pages: pages.map(pg => ({ w: Math.round(pg.width), failed: !!pg.failed,
+    items: pg.items.map(i => [mask(i.s), +i.x.toFixed(1), +i.y.toFixed(1), +i.w.toFixed(1), +i.h.toFixed(1)]) })) });
 }
 function toLines(items) {
   const sorted = [...items].sort((a, b) => b.y - a.y || a.x - b.x);
@@ -992,9 +1033,19 @@ function parsePdfPages(pages) {
       if (Math.abs(g.a.y - l.y) > rowH * 1.6 + 6) continue; // footer / unrelated text
       g.lines.push(l);
     }
+    // A row whose number is missing gets swept into its neighbour. Everyone has one birth date, so a group
+    // holding two dates is two rows: cut it at the widest vertical gap(s) between its lines.
+    const parts = [];
     for (const g of groups) {
+      const ls = g.lines.sort((a, b) => b.y - a.y);
+      const n = ls.filter(l => l.items.some(i => assignCol(cols, i) === 'dogum' && DATE_RE.test(i.s))).length;
+      if (n < 2) { parts.push(ls); continue; }
+      const cuts = ls.slice(1).map((l, i) => ({ i: i + 1, d: ls[i].y - l.y })).sort((a, b) => b.d - a.d).slice(0, n - 1).map(c => c.i).sort((a, b) => a - b);
+      let from = 0; for (const c of cuts) { parts.push(ls.slice(from, c)); from = c; } parts.push(ls.slice(from));
+    }
+    for (const lines of parts) {
       const raw = {};
-      for (const l of g.lines.sort((a, b) => b.y - a.y)) for (const it of l.items) {
+      for (const l of lines) for (const it of l.items) {
         const k = assignCol(cols, it); if (!k) continue;
         // a word broken by the cell width ("MÜNEVVE" + "R") or after a hyphen is glued back
         const glue = raw[k] && (/[-/]$/.test(raw[k]) || /^\p{L}{1,2}$/u.test(it.s)) ? '' : ' ';
@@ -2215,10 +2266,17 @@ function openImport(tab = 'pdf') {
   $('#pdfIn', d).onchange = e => handleFiles(e.target.files);
   $('#bkIn', d).onchange = e => handleFiles(e.target.files);
   $('#pasteGo', d).onclick = () => {
-    const recs = parseText($('#pasteIn', d).value).map(normalizeRecord).filter(r => r.first);
+    const recs = toRecords(parseText($('#pasteIn', d).value));
     if (!recs.length) return toast('Satırlar çözümlenemedi. Biçimi kontrol et.');
     pending.push({ label: 'Yapıştırılan metin', recs, raw: '' }); drawReview();
   };
+}
+// one bad row must not sink the document: it comes through empty and flagged instead
+function toRecords(raws) {
+  return raws.map(raw => {
+    try { return normalizeRecord(raw); }
+    catch (err) { console.warn(err, raw); return { relation: String(raw.yakinlik || ''), gender: 'U', first: '', last: '', fatherName: '', motherName: '', birthPlace: '', birthDate: '', alive: null, deathDate: '' }; }
+  }).filter(r => r.first || r.relation); // nothing in either is page furniture, not a person
 }
 async function handleFiles(files) {
   if (!$('#modal').classList.contains('open') || !$('#review')) openImport();
@@ -2228,12 +2286,14 @@ async function handleFiles(files) {
       if (name.endsWith('.pdf') || file.type === 'application/pdf') {
         toast(`${file.name} okunuyor…`);
         const pages = await pdfItems(file);
-        let raws = parsePdfPages(pages);
+        let raws = [];
+        try { raws = parsePdfPages(pages); } catch (err) { console.warn(err); }
         const rawText = pages.map(pg => toLines(pg.items).map(l => l.items.map(i => i.s).join('  ')).join('\n')).join('\n\n');
-        if (!raws.length) raws = parseText(rawText);
-        const recs = raws.map(normalizeRecord).filter(r => r.first);
-        if (!recs.length) { toast(`${file.name}: tablo bulunamadı. Metin yapıştırmayı dene.`, 4000); pending.push({ label: file.name, recs: [], raw: rawText }); }
-        else pending.push({ label: file.name, recs, raw: rawText });
+        if (!raws.length) try { raws = parseText(rawText); } catch (err) { console.warn(err); }
+        const recs = toRecords(raws), layout = layoutReport(pages), lost = pages.filter(pg => pg.failed).length;
+        if (lost) toast(`${file.name}: ${lost} sayfa okunamadı, diğerleri işlendi`, 4000);
+        if (!recs.length) toast(`${file.name}: tablo bulunamadı. Metin yapıştırmayı dene.`, 4000);
+        pending.push({ label: file.name, recs, raw: rawText, layout });
       } else if (name.endsWith('.soyatlasi') || name.endsWith('.json')) {
         let data = JSON.parse(await file.text());
         if (data.enc) {
@@ -2253,15 +2313,24 @@ function drawReview() {
   const box = $('#review'); if (!box) return;
   const show = v => v === 'M' ? 'E' : v === 'F' ? 'K' : v === 'U' ? '' : v === true ? 'Sağ' : v === false ? 'Ölü' : v ?? '';
   box.innerHTML = pending.map((b, bi) => {
-    const self = b.recs.find(r => !relationPath(r.relation).length) || b.recs[0];
+    const self = b.recs.find(r => /kendi/i.test(r.relation || '')) || b.recs[0], rel = b.recs.some(r => r.relation);
+    const iss = b.recs.map(r => recordIssues(r, rel)), held = iss.filter(i => i.some(x => BLOCKING.includes(x))).length, warn = iss.filter(i => i.length).length - held;
     return `<div class="review" data-b="${bi}"><h4>${esc(b.label)}</h4>
-      <p class="sub" style="margin:0 0 8px">${b.recs.length ? `${b.recs.length} kişi bulundu · belge sahibi: <b style="color:var(--text)">${esc(self ? self.first + ' ' + self.last : '?')}</b>. Hatalı hücreleri tıklayıp düzeltebilirsin.` : 'Kişi bulunamadı.'}</p>
-      ${b.recs.length ? `<div class="tbl-wrap"><table><thead><tr>${COLS.map(c => `<th>${c[1]}</th>`).join('')}<th></th></tr></thead><tbody>
-      ${b.recs.map((r, ri) => `<tr data-r="${ri}">${COLS.map(c => `<td contenteditable="plaintext-only" spellcheck="false" data-k="${c[0]}">${esc(show(r[c[0]]))}</td>`).join('')}<td class="del" title="Satırı çıkar">${X_ICON}</td></tr>`).join('')}
+      <p class="sub" style="margin:0 0 8px">${b.recs.length ? `${b.recs.length} satır bulundu · belge sahibi: <b style="color:var(--text)">${esc(self ? self.first + ' ' + self.last : '?')}</b>. Hatalı hücreleri tıklayıp düzeltebilirsin.` : 'Kişi bulunamadı.'}</p>
+      ${held ? `<p class="rv-warn bad"><b>${held} satır</b> okunamadı ya da başka bir satırla karışmış görünüyor. Düzeltilene kadar ağaca eklenmeyecek; ağaç yanlış bağlanmasın diye. Kırmızı satırları düzelt ya da sil.</p>` : ''}
+      ${warn ? `<p class="rv-warn">${warn} satırda küçük bir tuhaflık var (sarı); kontrol etmen iyi olur.</p>` : ''}
+      ${b.recs.length ? `<div class="tbl-wrap"><table><thead><tr>${held || warn ? '<th>Not</th>' : ''}${COLS.map(c => `<th>${c[1]}</th>`).join('')}<th></th></tr></thead><tbody>
+      ${b.recs.map((r, ri) => `<tr data-r="${ri}" class="${iss[ri].some(x => BLOCKING.includes(x)) ? 'bad' : iss[ri].length ? 'odd' : ''}">${held || warn ? `<td class="iss">${esc(iss[ri].join(' · '))}</td>` : ''}${COLS.map(c => `<td contenteditable="plaintext-only" spellcheck="false" data-k="${c[0]}">${esc(show(r[c[0]]))}</td>`).join('')}<td class="del" title="Satırı çıkar">${X_ICON}</td></tr>`).join('')}
       </tbody></table></div>` : ''}
+      <div class="row" style="margin-top:8px"><button class="btn sm" data-addrow>+ Satır ekle</button>
+      ${b.layout ? `<button class="btn sm ghost" data-report title="Adlar, yerler ve tarihler maskelenir; yalnızca tablonun yerleşimi kalır">Düzen raporu indir (kişisel bilgi içermez)</button>` : ''}</div>
       ${b.raw ? `<details><summary>Belgeden okunan ham metin</summary><pre>${esc(b.raw.slice(0, 20000))}</pre></details>` : ''}</div>`;
   }).join('') + (pending.some(b => b.recs.length) ? `<div class="row"><button class="btn primary" id="commit">Ağaca ekle</button><span class="note" style="margin:0">Aynı kişiler ad, doğum tarihi ve ebeveyn adlarıyla eşleştirilir.</span></div>` : '');
   $$('td.del', box).forEach(td => td.onclick = () => { const tr = td.closest('tr'), b = pending[tr.closest('[data-b]').dataset.b]; readBack(); b.recs.splice(+tr.dataset.r, 1); drawReview(); });
+  $$('[data-addrow]', box).forEach(bt => bt.onclick = () => { readBack(); pending[bt.closest('[data-b]').dataset.b].recs.push({ relation: '', gender: 'U', first: '', last: '', fatherName: '', motherName: '', birthPlace: '', birthDate: '', alive: null, deathDate: '' }); drawReview(); });
+  $$('[data-report]', box).forEach(bt => bt.onclick = () => download('soy-atlasi-duzen-raporu.json', pending[bt.closest('[data-b]').dataset.b].layout, 'application/json'));
+  // re-check a row as soon as a cell is edited
+  box.onfocusout = e => { if (e.target.matches?.('td[data-k]')) { readBack(); const tr = e.target.closest('tr'), b = pending[tr.closest('[data-b]').dataset.b], r = b.recs[tr.dataset.r], i = recordIssues(r, b.recs.some(x => x.relation)); tr.className = i.some(x => BLOCKING.includes(x)) ? 'bad' : i.length ? 'odd' : ''; const c = tr.querySelector('.iss'); if (c) c.textContent = i.join(' · '); } };
   const c = $('#commit', box); if (c) c.onclick = commitPending;
 }
 function readBack() {
@@ -2281,15 +2350,18 @@ function readBack() {
 }
 function commitPending() {
   readBack();
-  let lastSelf = null, total = 0;
-  for (const b of pending) if (b.recs.length) {
-    const self = b.recs.find(r => !relationPath(r.relation).length);
-    lastSelf = importRecords(b.recs, self ? `${self.first} ${self.last} — e-Devlet` : b.label) || lastSelf; total += b.recs.length;
+  let lastSelf = null, total = 0, held = 0;
+  for (const b of pending) {
+    const rel = b.recs.some(r => r.relation), ok = b.recs.filter(r => !isBlocked(r, rel));
+    held += b.recs.length - ok.length;
+    if (!ok.length) continue;
+    const self = ok.find(r => /kendi/i.test(r.relation || ''));
+    lastSelf = importRecords(ok, self ? `${self.first} ${self.last} — e-Devlet` : b.label) || lastSelf; total += ok.length;
   }
   pending = []; closeModal();
   if (lastSelf) S.focus = lastSelf;
   afterChange();
-  toast(`${total} kayıt işlendi · ağaçta ${store.people.size} kişi`);
+  toast(`${total} kayıt işlendi${held ? ` · ${held} sorunlu satır atlandı` : ''} · ağaçta ${store.people.size} kişi`, held ? 4500 : 2600);
 }
 
 // whole-window drop

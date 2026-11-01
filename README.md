@@ -13,7 +13,11 @@ Aile ağacını üç boyutlu bir takımyıldız olarak gösteren, tek dosyalık 
 - **Gezinme düğmeleri ve mobil** — sağ altta yakınlaştır/uzaklaştır, tümünü gör, merkeze dön. Mobilde tek parmak (isimlerin üstünden de) kaydırır/döndürür, iki parmak parmakların arasına yakınlaştırır, çift dokunuş yakınlaştırır ya da kişiyi merkeze alır. Kişi kartı alt sayfa olarak açılır: tutamaçtan yukarı çekince büyür, aşağı çekince kapanır; seçilen kişi kartın üstünde görünür kalır.
 - **Klavye** — `+` / `-` yakınlaştır, `0` tümünü gör, `F` merkeze dön, ok tuşları kaydır, `/` ara, `Esc` kapat. Pusula'da ↑ ebeveyne, ↓ çocuğa, ← → kardeşlere geçer, `Backspace` geri gider.
 - **Yelpaze görünümü** — 7 kuşağa kadar ata yelpazesi ve torun yayı. Boş dilime tıklayarak eksik ebeveyn eklenebilir. SVG olarak dışa aktarılır.
-- **e-Devlet içe aktarma** — "Alt-Üst Soy Bilgisi Sorgulama" PDF'i tarayıcıda okunur. İçe aktarmadan önce tablo gözden geçirilip düzeltilebilir.
+- **e-Devlet içe aktarma** — "Alt-Üst Soy Bilgisi Sorgulama" PDF'i tarayıcıda okunur. İçe aktarmadan önce tablo gözden geçirilip düzeltilebilir. Bozuk satırlar belgenin geri kalanını engellemez:
+  - Numarası okunamayıp komşusuna karışan satırlar ayrılır.
+  - Adı ya da yakınlığı okunamayan satırlar kırmızıyla işaretlenir ve düzeltilene kadar ağaca eklenmez.
+  - Belgede eksik kalan bir ara kişi (ör. annenin babası) "Adı bilinmiyor" olarak eklenir, böylece üstündeki atalar ağaca bağlı kalır.
+- **Düzen raporu** — bir belge yanlış okunursa, içe aktarma ekranındaki "Düzen raporu indir" ile tablonun yalnızca yerleşimi kaydedilir. Adlar, yerler ve tarihler maskelenir (Ahmet → Aaaaa, 1978 → 0000); dosya hata bildirmek için güvenle paylaşılabilir.
 - **Birleşen ağaçlar** — farklı kişilerin belgeleri (eş, kuzen, teyze…) ortak kişiler üzerinden otomatik birleşir. Eşleşmede ad, doğum tarihi ve baba/ana adı kullanılır. Kaçan eşleşmeler "Birleştir…" ile elle birleştirilir.
 - **Herkesi merkeze alabilme** — çift tıklanan kişi ağacın merkezine geçer; tüm akrabalık adları ona göre yeniden hesaplanır (babaanne, dayı, yenge, baldız, dünür, kuzen…).
 - **Elle giriş** — kişi ekleme ve düzenleme, ebeveyn/eş/çocuk/kardeş bağlama.
