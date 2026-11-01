@@ -13,7 +13,7 @@
 :root{
   --bg:#f5f6fa; --bg-glow:#ffffff; --panel:rgba(255,255,255,.86); --panel-solid:#ffffff; --sunken:#f1f3f8;
   --line:rgba(16,24,40,.08); --line2:rgba(16,24,40,.16); --hover:rgba(16,24,40,.05);
-  --text:#101828; --muted:#5d6679; --faint:#98a1b3;
+  --text:#101828; --muted:#535c70; --faint:#7d8699;
   --accent:#b7791f; --accent-soft:rgba(214,158,46,.12); --accent-line:rgba(214,158,46,.35);
   --primary:#101828; --primary-text:#fff;
   --m:#2f8fdc; --f:#e2665a; --u:#8b7cf0; --ok:#15a36b; --bad:#d64545;
@@ -38,6 +38,8 @@
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.45 var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:10px}
+.search input:focus-visible,.form :focus-visible{outline:none}
 #stage{position:fixed;inset:0;background:radial-gradient(1200px 800px at 50% 40%,var(--bg-glow) 0%,var(--bg) 70%)}
 :root:not([data-theme="dark"]) #stage{background:radial-gradient(1200px 800px at 50% 40%,#fff 0%,var(--bg) 70%),var(--bg);background-image:radial-gradient(rgba(16,24,40,.07) 1px,transparent 1px),radial-gradient(1200px 800px at 50% 40%,#fff 0%,var(--bg) 70%);background-size:22px 22px,auto}
 #stage canvas{display:block}
@@ -46,6 +48,8 @@ button{cursor:pointer}
 #fan svg{width:100%;height:100%}
 body.view-fan #fan{display:block}
 body.view-fan #labels,body.view-fan #hint{display:none}
+/* nothing to search, switch or export until there is a family */
+body.empty .search,body.empty #viewSeg,body.empty #scopeSeg,body.empty #addBtn,body.empty #importBtn,body.empty .rel,body.empty #privacy,body.empty #hint,body.empty #card{display:none!important}
 
 /* labels */
 .lbl{pointer-events:auto;cursor:pointer;text-align:center;white-space:nowrap;padding:4px 9px;border-radius:10px;background:var(--lbl-bg);transition:background .2s,box-shadow .2s;user-select:none}
@@ -57,7 +61,7 @@ body.view-fan #labels,body.view-fan #hint{display:none}
 .lbl.focus{background:var(--panel-solid);box-shadow:0 0 0 1.5px var(--accent-line),var(--shadow)}
 .lbl.focus b{font-size:14px}
 .lbl.sel{background:var(--panel-solid);box-shadow:0 0 0 1px var(--line2),var(--shadow)}
-.ring-lbl{font:600 10.5px var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--faint);white-space:nowrap;pointer-events:none;transform:translateX(-100%)}
+.ring-lbl{font:600 10.5px var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--faint);white-space:nowrap;pointer-events:none;transition:opacity .2s}
 
 /* chrome */
 .glass{background:var(--panel);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
@@ -99,15 +103,19 @@ body.view-fan #labels,body.view-fan #hint{display:none}
 .menu button:hover{background:var(--hover)}
 .menu button small{display:block;color:var(--muted);font-size:11.5px}
 .rel{position:relative}
+.short{display:none}
+.brk{display:none}
 
 #privacy{position:fixed;left:14px;bottom:14px;display:flex;flex-direction:column;gap:8px;z-index:4;max-width:min(360px,calc(100vw - 28px))}
 .chip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;font-size:12px;color:var(--muted)}
 .chip svg{width:14px;height:14px;color:var(--ok);flex:none}
-.legend{padding:10px 12px;display:grid;grid-template-columns:auto auto;gap:6px 16px;font-size:12px;color:var(--muted)}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:-1px}
-.stats{padding:10px 12px;font-size:12px;color:var(--muted)}
+.info{padding:10px 12px;display:grid;gap:7px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--muted)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.stats{font-size:12px;color:var(--muted)}
 .stats b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
-#hint{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--faint);z-index:3;white-space:nowrap}
+#hint{position:fixed;bottom:16px;right:16px;font-size:12px;color:var(--muted);z-index:3;white-space:nowrap}
+body.card-open #hint{display:none}
 
 /* card */
 #card{position:fixed;top:70px;right:14px;bottom:14px;width:370px;overflow:auto;padding:20px;z-index:6;background:var(--panel-solid);transform:translateX(calc(100% + 30px));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
@@ -130,6 +138,7 @@ dt{color:var(--muted)}dd{margin:0}
 .pchip i{width:16px;height:16px;border-radius:50%}
 .pchip small{color:var(--muted)}
 .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.actions.top{margin-top:12px}
 .note{font-size:12px;color:var(--muted);margin-top:10px}
 .note svg{width:13px;height:13px;vertical-align:-2px;color:var(--ok)}
 
@@ -185,7 +194,7 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
 .pillars div{padding:14px;border:1px solid var(--line);border-radius:14px;font-size:12.5px;color:var(--muted);background:var(--sunken)}
 .pillars b{display:block;color:var(--text);font-weight:600;margin-bottom:3px}
 
-#toast{position:fixed;left:50%;bottom:54px;transform:translateX(-50%) translateY(20px);opacity:0;transition:.3s;z-index:40;padding:10px 16px;pointer-events:none;font-size:13px;background:var(--primary);color:var(--primary-text);border-color:transparent}
+#toast{position:fixed;left:50%;bottom:54px;width:max-content;max-width:calc(100vw - 32px);text-align:center;transform:translateX(-50%) translateY(20px);opacity:0;transition:.3s;z-index:40;padding:10px 16px;pointer-events:none;font-size:13px;background:var(--primary);color:var(--primary-text);border-color:transparent}
 #toast.show{opacity:1;transform:translateX(-50%)}
 
 /* fan */
@@ -197,15 +206,39 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
 .fan-title{fill:var(--text);font-family:var(--display);font-weight:700}
 .fan-sub{fill:var(--muted);font-family:var(--sans)}
 
-@media (max-width:900px){
-  #top{flex-wrap:wrap}
+@media (max-width:1240px){
   .brand small{display:none}
-  .search{order:5;width:100%}
+  .search{width:min(240px,24vw)}
+  #addBtn .t,#exportBtn .t{display:none}
+  #addBtn,#exportBtn{width:42px;padding:0}
+  #hint{display:none}
+}
+@media (max-width:1040px){
+  .long{display:none}.short{display:inline}
+  .brand h1{display:none}.brand{padding:7px}
+  #importBtn .t{display:none}#importBtn{width:42px;padding:0}
+}
+@media (max-width:900px){
+  /* phone: row 1 = logo, search, file actions, theme; row 2 = view controls */
+  #top{flex-wrap:wrap;top:10px;left:10px;right:10px;gap:6px}
+  .brand{order:1;height:40px;width:40px;justify-content:center}
+  .search{order:2;flex:1;width:auto;min-width:0}
+  #importBtn{order:3}.rel{order:4}#themeBtn{order:5}
+  .brk{display:block;order:6;flex-basis:100%;height:0}
+  .spacer{display:none}
+  #viewSeg{order:7}#scopeSeg{order:8}#addBtn{order:9;margin-left:auto}
+  .btn,.search input{height:40px}
+  .btn.icon,#importBtn,#exportBtn,#addBtn{width:40px}
+  .seg{height:40px}.seg button{height:32px;padding:0 9px}
   .search kbd{display:none}
+  #privacy .chip,.legend{display:none}
+  body.card-open #privacy{display:none}
   #card{top:auto;left:8px;right:8px;width:auto;max-height:62vh;bottom:8px;transform:translateY(calc(100% + 20px))}
   #card.open{transform:none}
-  .legend,#hint{display:none}
   .pillars{grid-template-columns:1fr}
+  #empty{align-items:flex-start;overflow:auto;padding:64px 12px 12px}
+  .hero{padding:28px 20px}
+  .hero .row .btn{flex:1 1 auto}
   .form{grid-template-columns:1fr}
   .seg button{padding:0 9px}
   .btn .t{display:none}
@@ -213,7 +246,7 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
 }
 </style>
 </head>
-<body>
+<body class="empty">
 <div id="stage"></div>
 <div id="labels"></div>
 <div id="fan"></div>
@@ -229,13 +262,15 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
     <div id="results" class="results glass"></div>
   </div>
   <div class="spacer"></div>
+  <div class="brk"></div>
   <div class="seg glass" id="viewSeg">
-    <button data-view="3d" class="on">Takımyıldız</button>
-    <button data-view="fan">Yelpaze</button>
+    <button data-view="tree" class="on" title="Kuşaklar yatay sıralarda">Ağaç</button>
+    <button data-view="tower" title="Ağaç dönen bir silindirin yüzeyinde">Kule 3B</button>
+    <button data-view="fan" title="Ata yelpazesi">Yelpaze</button>
   </div>
   <div class="seg glass" id="scopeSeg" title="Görünür kişiler">
-    <button data-scope="all" class="on">Tüm bağlar</button>
-    <button data-scope="direct">Doğrudan soy</button>
+    <button data-scope="all" class="on" title="Bağlantılı herkes"><span class="long">Tüm bağlar</span><span class="short">Tümü</span></button>
+    <button data-scope="direct" title="Yalnızca atalar ve torunlar"><span class="long">Doğrudan soy</span><span class="short">Soy</span></button>
   </div>
   <button class="btn icon" id="themeBtn" aria-label="Temayı değiştir"></button>
   <button class="btn" id="addBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span class="t">Kişi</span></button>
@@ -254,14 +289,16 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
 </header>
 
 <div id="privacy">
-  <div class="stats glass" id="stats" hidden></div>
-  <div class="legend glass" id="legend" hidden>
-    <span><i style="background:var(--m)"></i>Erkek</span><span><i style="background:var(--f)"></i>Kadın</span>
-    <span><i style="background:#5b6377"></i>Hayatta değil</span><span><i style="border:1.5px solid #9aa3b8"></i>Yalnızca adı biliniyor</span>
+  <div class="info glass">
+    <div class="stats" id="stats"></div>
+    <div class="legend" id="legend">
+      <span><i style="background:var(--m)"></i>Erkek</span><span><i style="background:var(--f)"></i>Kadın</span>
+      <span><i style="background:var(--faint)"></i>Vefat</span><span><i style="border:1.5px solid var(--faint)"></i>Yalnızca adı</span>
+    </div>
   </div>
   <div class="chip glass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Veriler yalnızca bu sekmede · hiçbir yere gönderilmez, kaydedilmez</div>
 </div>
-<div id="hint">Sürükle: döndür · Sağ tık / iki parmak: kaydır · Tekerlek: yakınlaş · Çift tıkla: merkeze al</div>
+<div id="hint">Sürükle: döndür · Sağ tık: kaydır · Tekerlek: yakınlaş · Çift tık: merkeze al</div>
 
 <aside id="card" class="glass"></aside>
 
@@ -352,7 +389,7 @@ function download(name, data, type) {
 
 /* ================= store (memory only) ================= */
 const store = { people: new Map(), sources: new Map(), seq: 1, dirty: false };
-const S = { focus: null, selected: null, hover: null, scope: 'all', view: '3d' };
+const S = { focus: null, selected: null, hover: null, scope: 'all', view: 'tree' };
 const FIELDS = ['first', 'last', 'gender', 'birthDate', 'birthPlace', 'deathDate', 'fatherName', 'motherName', 'marital', 'registry', 'regNo', 'notes'];
 function makePerson(o = {}) {
   return { id: 'p' + (store.seq++).toString(36), first: '', last: '', gender: 'U', birthDate: '', birthPlace: '', alive: null, deathDate: '',
@@ -1003,9 +1040,21 @@ function computeLayout(focus) {
     X.set(T);
   }
   const off = X[ix.get(focus)];
+  // the tower wraps the widest generation exactly once around the cylinder
+  let widest = 0;
+  for (const row of rows.values()) widest = Math.max(widest, Math.max(...row.map(i => X[i])) - Math.min(...row.map(i => X[i])));
+  TOWER_R = Math.max(340, (widest + GAP * 1.5) / (Math.PI * 2));
   const pos = new Map();
-  ids.forEach((id, i) => { const x = X[i] - off; pos.set(id, new THREE.Vector3(x, G[i] * GEN_H, -x * x / BEND)); });
+  ids.forEach((id, i) => pos.set(id, place(X[i] - off, G[i] * GEN_H)));
   return { pos, gen, hops };
+}
+let TOWER_R = 400;
+const isTower = () => S.view === 'tower';
+// flat tree coordinates -> 3D: a gently bent sheet, or the surface of a cylinder in tower view
+function place(x, y) {
+  if (!isTower()) return new THREE.Vector3(x, y, -x * x / BEND);
+  const t = x / TOWER_R;
+  return new THREE.Vector3(TOWER_R * Math.sin(t), y, TOWER_R * Math.cos(t));
 }
 function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return Math.abs(h); }
 
@@ -1022,6 +1071,7 @@ scene.fog = new THREE.FogExp2(TH.bg, 0.00009);
 const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 1, 6000);
 camera.position.set(0, 90, 900);
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.addEventListener('change', () => { if (isTower()) hlDirty = true; });
 controls.enableDamping = true; controls.dampingFactor = 0.07; controls.maxDistance = 2600; controls.minDistance = 40;
 
 function glowTexture(ring) {
@@ -1130,14 +1180,15 @@ function relayout(keepCamera) {
   ringGroup.children.slice().forEach(c => { ringGroup.remove(c); c.geometry?.dispose?.(); if (c.element) c.element.remove(); });
   const gens = new Map();
   for (const [id, v] of layout.pos) { const g = layout.gen.get(id), r = gens.get(g) || [0, 0]; gens.set(g, [Math.min(r[0], v.x), Math.max(r[1], v.x)]); }
+  const tower = isTower();
   let minX = 0, maxX = 0, minY = 0, maxY = 0;
   for (const [g, [x0, x1]] of gens) { minX = Math.min(minX, x0); maxX = Math.max(maxX, x1); minY = Math.min(minY, g * GEN_H); maxY = Math.max(maxY, g * GEN_H); }
   for (const [g] of gens) {
-    const pts = [], a = minX - 90, b = maxX + 90, y = g * GEN_H - 34;
-    for (let i = 0; i <= 64; i++) { const x = a + (b - a) * i / 64; pts.push(new THREE.Vector3(x, y, -x * x / BEND)); }
+    const pts = [], a = tower ? -Math.PI * TOWER_R : minX - 90, b = tower ? Math.PI * TOWER_R : maxX + 90, y = g * GEN_H - 34;
+    for (let i = 0; i <= 96; i++) pts.push(place(a + (b - a) * i / 96, y));
     ringGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: g === 0 ? TH.accent : TH.guide, transparent: true, opacity: g === 0 ? 0.3 : 0.16, depthWrite: false })));
     const el = document.createElement('div'); el.className = 'ring-lbl'; el.textContent = genName(g);
-    const lo = new CSS2DObject(el); lo.position.set(a, g * GEN_H, -a * a / BEND); ringGroup.add(lo);
+    const lo = new CSS2DObject(el); lo.position.copy(tower ? place(-TOWER_R * 1.25, g * GEN_H) : place(a, g * GEN_H)); ringGroup.add(lo);
   }
   moving = true; hlDirty = true;
   if (!keepCamera || S.focus !== relayout.fitted) {
@@ -1150,7 +1201,12 @@ function relayout(keepCamera) {
     const dist = Math.min(fit, Math.max(readable, 520));
     const zoomed = dist < fit;
     const cx = zoomed ? 0 : (minX + maxX) / 2, cy = zoomed ? Math.min(Math.max(GEN_H * 0.6, minY), maxY) : (minY + maxY) / 2;
-    camTween = { from: controls.target.clone(), to: new THREE.Vector3(cx, cy, 0), t: 0,
+    if (tower) {
+      // orbit around the tower's axis, looking at its front face from a little above
+      const d = Math.max(readable, halfH / Math.tan(vf) * 0.8, 520);
+      camTween = { from: controls.target.clone(), to: new THREE.Vector3(0, cy, 0), t: 0,
+        fromPos: camera.position.clone(), toPos: new THREE.Vector3(0, cy + d * 0.22, TOWER_R + d) };
+    } else camTween = { from: controls.target.clone(), to: new THREE.Vector3(cx, cy, 0), t: 0,
       fromPos: camera.position.clone(), toPos: new THREE.Vector3(cx, cy + dist * 0.05, dist) };
   }
   updateChrome();
@@ -1186,7 +1242,7 @@ function rebuildLines() {
     }
   };
   const vis = id => { const n = nodes.get(id); return n && n.alpha > 0.03 ? n : null; };
-  const weight = (...ids) => { const a = Math.min(...ids.map(i => vis(i)?.alpha ?? 0)); if (!hl) return 0.6 * a; return (ids.every(i => hl.has(i)) ? 1 : 0.15) * a; };
+  const weight = (...ids) => { const a = Math.min(...ids.map(i => (vis(i)?.alpha ?? 0) * (vis(i)?.face ?? 1))); if (!hl) return 0.6 * a; return (ids.every(i => hl.has(i)) ? 1 : 0.15) * a; };
   const couples = new Set();
   for (const [id, n] of nodes) {
     if (!vis(id)) continue;
@@ -1225,7 +1281,7 @@ function animate(now = performance.now()) {
   // time-based easing so slow or throttled devices settle just as quickly
   const dt = Math.max(0, Math.min(0.5, (now - lastT) / 1000)); lastT = Math.max(lastT, now);
   const ease = k => 1 - Math.exp(-dt * k);
-  if (S.view !== '3d') return;
+  if (S.view === 'fan') return;
   if (camTween) {
     camTween.t = Math.min(1, camTween.t + dt / 1.1);
     const e = 1 - (1 - camTween.t) ** 3;
@@ -1246,8 +1302,13 @@ function animate(now = performance.now()) {
     const big = id === S.focus ? 30 : id === S.selected ? 25 : 19;
     n.scale += (big - n.scale) * ease(9);
     n.sprite.scale.setScalar(n.scale * (0.6 + 0.4 * n.alpha));
+    // tower: people on the far side of the cylinder fade back
+    if (isTower()) {
+      const nx = n.pos.x / TOWER_R, nz = n.pos.z / TOWER_R, to = tmp.copy(camera.position).sub(n.pos).normalize();
+      n.face = Math.max(0.18, Math.min(1, 0.55 + (nx * to.x + nz * to.z) * 2.2));
+    } else n.face = 1;
     const dim = hl && !hl.has(id) ? 0.3 : 1;
-    n.sprite.material.opacity = n.alpha * dim;
+    n.sprite.material.opacity = n.alpha * dim * n.face;
     const o = (n.show ? 1 : 0) * (hl && !hl.has(id) ? 0.35 : 1) * n.alpha;
     n.lo = o < (n.lo ?? 0) ? Math.max(o, (n.lo ?? 0) - ease(30)) : (n.lo ?? 0) + (o - (n.lo ?? 0)) * ease(12);
     n.el.style.opacity = n.lo.toFixed(2); n.el.style.pointerEvents = n.lo > 0.5 ? 'auto' : 'none';
@@ -1269,6 +1330,7 @@ function declutter(hl) {
   for (const [id, n] of nodes) {
     n.show = false;
     if (n.talpha === 0 || n.alpha < 0.2) continue;
+    if ((n.face ?? 1) < 0.7 && id !== S.focus && id !== S.selected) continue;
     const v = tmp.copy(n.pos).project(camera);
     if (v.z > 1 || Math.abs(v.x) > 1.1 || Math.abs(v.y) > 1.1) continue;
     if (!n.w && n.el.offsetWidth) { n.w = n.el.offsetWidth; n.h = n.el.offsetHeight; }
@@ -1283,6 +1345,16 @@ function declutter(hl) {
   for (const it of items) {
     if (placed.some(o => it.x0 < o.x1 && it.x1 > o.x0 && it.y0 < o.y1 && it.y1 > o.y0)) continue;
     placed.push(it); it.n.show = true;
+  }
+  // generation names only where no person's label is
+  for (const o of ringGroup.children) {
+    if (!o.isCSS2DObject) continue;
+    const v = tmp.copy(o.position).project(camera), w = o.element.textContent.length * 7.5 + 12;
+    const x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H;
+    const r = { x0: x - w / 2, x1: x + w / 2, y0: y - 9, y1: y + 9 };
+    const ok = v.z < 1 && !placed.some(q => r.x0 < q.x1 && r.x1 > q.x0 && r.y0 < q.y1 && r.y1 > q.y0);
+    o.element.style.opacity = ok ? '1' : '0';
+    if (ok) placed.push(r);
   }
 }
 
@@ -1401,7 +1473,7 @@ function setFocus(id) {
   relayout(); openCard(id);
   if (S.view === 'fan') renderFan();
 }
-function closeCard() { $('#card').classList.remove('open'); }
+function closeCard() { $('#card').classList.remove('open'); document.body.classList.remove('card-open'); }
 function pchip(id, sub) {
   const p = P(id);
   return `<button class="pchip" data-goto="${id}"><i style="background:${GCOL[p.gender]};${p.inferred ? 'background:transparent;border:1.5px solid ' + GCOL[p.gender] : ''}"></i>${esc(fullName(p))}${sub ? ` <small>${esc(sub)}</small>` : ''}</button>`;
@@ -1423,6 +1495,10 @@ function openCard(id) {
     </div>
     ${id !== S.focus && focusP ? `<div class="kin"><b>${esc(kin.term)}</b><div>${esc(possessive(focusP.first))} ${esc(lower(kin.term[0]) + kin.term.slice(1))}${kin.chain ? ' · ' + esc(kin.chain) : ''}</div></div>` : `<div class="kin"><b>Ağacın merkezi</b><div>Akrabalık adları bu kişiye göre hesaplanıyor</div></div>`}
     ${p.inferred ? `<p class="note">Bu kişi yalnızca bir belgede baba/ana adı olarak geçiyor. Bilgilerini düzenleyerek tamamlayabilirsin.</p>` : ''}
+    <div class="actions top">
+      ${id !== S.focus ? `<button class="btn sm primary" data-a="focus">Merkeze al</button>` : ''}
+      <button class="btn sm" data-a="edit">Düzenle</button>
+    </div>
     <dl>
       ${row('Doğum', [p.birthPlace, p.birthDate].filter(Boolean).join(', '))}
       ${row('Ölüm', p.alive === false ? (p.deathDate || 'Tarih bilinmiyor') : '')}
@@ -1436,19 +1512,20 @@ function openCard(id) {
     ${group('Eşler', mates(id), yr)}
     ${group('Kardeşler', siblings(id), yr)}
     ${group('Çocuklar', kids(id), yr)}
-    <div class="sect">İşlemler</div>
+    <div class="sect">Akraba ekle</div>
     <div class="actions">
-      ${id !== S.focus ? `<button class="btn sm primary" data-a="focus">Merkeze al</button>` : ''}
-      <button class="btn sm" data-a="edit">Düzenle</button>
       ${!p.father ? `<button class="btn sm" data-a="father">+ Baba</button>` : ''}
       ${!p.mother ? `<button class="btn sm" data-a="mother">+ Anne</button>` : ''}
       <button class="btn sm" data-a="spouse">+ Eş</button>
       <button class="btn sm" data-a="child">+ Çocuk</button>
       <button class="btn sm" data-a="sibling">+ Kardeş</button>
-      <button class="btn sm" data-a="merge" title="Aynı kişinin iki kaydını birleştir">Birleştir…</button>
-      <button class="btn sm danger" data-a="delete">Sil</button>
+    </div>
+    <div class="sect">Kayıt</div>
+    <div class="actions">
+      <button class="btn sm" data-a="merge" title="Aynı kişinin iki kaydını birleştir">Başka kayıtla birleştir…</button>
+      <button class="btn sm danger" data-a="delete">Kişiyi sil</button>
     </div>`;
-  $('#card').classList.add('open');
+  $('#card').classList.add('open'); document.body.classList.add('card-open');
   $('#card').scrollTop = 0;
 }
 $('#card').addEventListener('click', e => {
@@ -1499,6 +1576,10 @@ function openPersonForm(id, ctx = {}) {
   const presetG = rel === 'father' ? 'M' : rel === 'mother' ? 'F' : rel === 'spouse' && base ? (base.gender === 'M' ? 'F' : base.gender === 'F' ? 'M' : 'U') : 'U';
   const titles = { father: 'babası', mother: 'annesi', spouse: 'eşi', child: 'çocuğu', sibling: 'kardeşi' };
   const v = p || { first: '', last: rel === 'child' && base?.gender === 'M' ? base.last : rel === 'sibling' || rel === 'father' ? base?.last || '' : '', gender: presetG, birthDate: '', birthPlace: '', alive: null, deathDate: '', fatherName: rel === 'child' && base?.gender === 'M' ? base.first : '', motherName: rel === 'child' && base?.gender === 'F' ? base.first : '', marital: '', notes: '' };
+  if (!p && rel === 'child' && base) {
+    reindex(); const ms = mates(base.id);
+    if (ms.length === 1) { const o = P(ms[0]); if (base.gender === 'F') v.fatherName = o.first; else v.motherName = o.first; }
+  }
   const first = rel === 'father' && base?.fatherName ? base.fatherName : rel === 'mother' && base?.motherName ? base.motherName : v.first;
   const d = openModal(`<h3>${p ? 'Kişiyi düzenle' : base ? `${esc(fullName(base))} — ${titles[rel]} ekle` : 'Yeni kişi'}</h3>
     <p class="sub">${p ? 'Değişiklikler yalnızca bu sekmede tutulur.' : 'Bilmediğin alanları boş bırakabilirsin.'}</p>
@@ -1509,7 +1590,7 @@ function openPersonForm(id, ctx = {}) {
       <label>Durum<select name="alive"><option value="">Bilinmiyor</option><option value="1" ${v.alive === true ? 'selected' : ''}>Hayatta</option><option value="0" ${v.alive === false ? 'selected' : ''}>Vefat etmiş</option></select></label>
       <label>Doğum tarihi<input name="birthDate" value="${esc(v.birthDate)}" placeholder="GG.AA.YYYY veya YYYY"></label>
       <label>Doğum yeri<input name="birthPlace" value="${esc(v.birthPlace)}"></label>
-      <label>Ölüm tarihi<input name="deathDate" value="${esc(v.deathDate)}" placeholder="GG.AA.YYYY veya YYYY"></label>
+      <label id="deathRow">Ölüm tarihi<input name="deathDate" value="${esc(v.deathDate)}" placeholder="GG.AA.YYYY veya YYYY"></label>
       <label>Medeni hali<input name="marital" value="${esc(v.marital)}"></label>
       <label>Baba adı<input name="fatherName" value="${esc(v.fatherName)}"></label>
       <label>Ana adı<input name="motherName" value="${esc(v.motherName)}"></label>
@@ -1517,6 +1598,8 @@ function openPersonForm(id, ctx = {}) {
     </form>
     <div class="row"><button class="btn primary" id="pfSave">${p ? 'Kaydet' : 'Ekle'}</button><button class="btn ghost" data-close>Vazgeç</button></div>`);
   const f = $('#pf', d); f.first.focus();
+  const syncDeath = () => { $('#deathRow', d).hidden = f.alive.value !== '0'; };
+  f.alive.addEventListener('change', syncDeath); syncDeath();
   const save = () => {
     const o = Object.fromEntries(new FormData(f));
     if (!o.first.trim()) { f.first.focus(); return; }
@@ -1571,9 +1654,9 @@ function openMergePicker(id) {
 
 // import dialog
 const SAMPLE_HELP = `<ol class="steps">
-  <li><b>turkiye.gov.tr</b>'de oturum aç, <b>“Alt-Üst Soy Bilgisi Sorgulama”</b> hizmetini aç.</li>
-  <li>Sorguyu çalıştır ve <b>belgeyi PDF olarak indir</b>.</li>
-  <li>PDF'i aşağıya bırak. Eşinin, kuzeninin, teyzenin belgelerini de ekleyebilirsin — ortak kişiler kendiliğinden birleşir.</li></ol>`;
+  <li><span><b>turkiye.gov.tr</b>'de oturum aç, <b>“Alt-Üst Soy Bilgisi Sorgulama”</b> hizmetini aç.</span></li>
+  <li><span>Sorguyu çalıştır ve <b>belgeyi PDF olarak indir</b>.</span></li>
+  <li><span>PDF'i aşağıya bırak. Eşinin, kuzeninin, teyzenin belgelerini de ekleyebilirsin; ortak kişiler kendiliğinden birleşir.</span></li></ol>`;
 let pending = []; // {label, recs, raw}
 function openImport(tab = 'pdf') {
   pending = [];
@@ -1673,7 +1756,7 @@ function commitPending() {
   }
   pending = []; closeModal();
   if (lastSelf) S.focus = lastSelf;
-  afterChange(); if (S.focus) select(S.focus);
+  afterChange();
   toast(`${total} kayıt işlendi · ağaçta ${store.people.size} kişi`);
 }
 
@@ -1705,7 +1788,12 @@ function pickResult(id, focus) {
 document.addEventListener('click', e => { if (!e.target.closest('.search')) resBox.classList.remove('open'); if (!e.target.closest('.rel')) $('#exportMenu').classList.remove('open'); });
 
 // toolbar
-$('#viewSeg').onclick = e => { const b = e.target.closest('[data-view]'); if (!b) return; S.view = b.dataset.view; $$('#viewSeg button').forEach(x => x.classList.toggle('on', x === b)); document.body.classList.toggle('view-fan', S.view === 'fan'); if (S.view === 'fan') renderFan(); };
+$('#viewSeg').onclick = e => {
+  const b = e.target.closest('[data-view]'); if (!b || b.dataset.view === S.view) return;
+  S.view = b.dataset.view; $$('#viewSeg button').forEach(x => x.classList.toggle('on', x === b));
+  document.body.classList.toggle('view-fan', S.view === 'fan');
+  if (S.view === 'fan') renderFan(); else { relayout.fitted = null; relayout(); }
+};
 $('#scopeSeg').onclick = e => { const b = e.target.closest('[data-scope]'); if (!b) return; S.scope = b.dataset.scope; $$('#scopeSeg button').forEach(x => x.classList.toggle('on', x === b)); relayout(); };
 $('#importBtn').onclick = () => openImport();
 $('#addBtn').onclick = () => openPersonForm(null);
@@ -1727,7 +1815,7 @@ $('#exportMenu').onclick = async e => {
   if (k === 'clear' && confirm('Bu sekmedeki tüm kişiler silinsin mi?')) { store.people.clear(); store.sources.clear(); S.focus = S.selected = null; closeCard(); afterChange(); }
 };
 function snapshotPng(stamp) {
-  if (S.view !== '3d') { toast('PNG, Takımyıldız görünümünde alınır.'); return; }
+  if (S.view === 'fan') { toast('Yelpaze için SVG dışa aktarımını kullan.'); return; }
   renderer.render(scene, camera);
   const src = renderer.domElement, c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
   const g = c.getContext('2d'), k = src.width / innerWidth;
@@ -1746,8 +1834,7 @@ function snapshotPng(stamp) {
 function updateChrome() {
   const n = store.people.size;
   $('#empty').classList.toggle('show', n === 0);
-  $('#legend').hidden = $('#stats').hidden = n === 0;
-  $('#hint').style.display = n ? '' : 'none';
+  document.body.classList.toggle('empty', n === 0);
   if (n) {
     const ys = [...store.people.values()].map(p => yearOf(p.birthDate)).filter(Boolean);
     const gs = [...layout.gen.values()];
@@ -1812,7 +1899,7 @@ E|Oğlu|KAAN|YILDIRIM|AHMET|ELİF|ÜSKÜDAR 03/02/2010|Bekar|Sağ`;
   add(huseyin, 'child', { first: 'Kadir', last: 'Yıldırım', gender: 'M', birthDate: '12.01.1958', birthPlace: 'Trabzon', alive: false, deathDate: '30.11.2021' });
   add(elif, 'sibling', { first: 'Pınar', last: 'Aksoy', gender: 'F', birthDate: '14.04.1985', birthPlace: 'Çankaya' });
   store.dirty = false;
-  S.focus = self; afterChange(); select(self);
+  S.focus = self; afterChange();
   toast('Örnek aile: iki ayrı e-Devlet belgesi birleştirildi (kurgusal kişiler)', 4200);
 }
 
