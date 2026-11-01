@@ -209,10 +209,10 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
 #toast.show{opacity:1;transform:translateX(-50%)}
 
 /* fan */
-.seg-path{cursor:pointer;transition:filter .15s;stroke:var(--bg);stroke-width:1.5}
+.seg-path{cursor:pointer !important;transition:filter .15s;stroke:var(--bg);stroke-width:1.5}
 .seg-path:hover{filter:brightness(1.12) saturate(1.1)}
 .fan-txt{pointer-events:none;font-family:var(--sans);fill:#0b1020}
-.fan-empty{cursor:pointer;fill:transparent;stroke:var(--line2)}
+.fan-empty{cursor:pointer !important;fill:transparent;stroke:var(--line2)}
 .fan-empty:hover{fill:var(--accent-soft)}
 .fan-title{fill:var(--text);font-family:var(--display);font-weight:700}
 .fan-sub{fill:var(--muted);font-family:var(--sans)}
@@ -1245,6 +1245,7 @@ function relayout(keepCamera) {
   updateChrome();
 }
 let camTween = null;
+const pendingZoom = { f: 1, at: new THREE.Vector2() }; // wheel zoom still to be applied, eased in per frame
 // 'auto': readable zoom around the focus (or everything if it fits); 'all': the whole tree; 'focus': back to the focus
 function frameView(mode = 'auto') {
   const b = layout.bounds; if (!b) return;
@@ -1291,9 +1292,9 @@ function applyControls() {
   controls.minPolarAngle = tower ? 0.3 : Math.PI / 2 - 0.6; controls.maxPolarAngle = tower ? Math.PI - 0.3 : Math.PI / 2 + 0.4;
   controls.minAzimuthAngle = tower ? -Infinity : -0.8; controls.maxAzimuthAngle = tower ? Infinity : 0.8;
   const hints = {
-    tree: 'Sürükle: kaydır · Sağ tık: eğ · Tekerlek: yakınlaş · Çift tık: merkeze al',
-    tower: 'Sürükle: döndür · Sağ tık: kaydır · Tekerlek: yakınlaş · Çift tık: merkeze al',
-    fan: 'Sürükle: kaydır · Tekerlek: yakınlaş · Çift tık: merkeze al'
+    tree: 'Sürükle: kaydır · Tekerlek: imlece yakınlaş · Shift+tekerlek: yana kaydır · Sağ tık: eğ · Kişiye çift tık: merkeze al',
+    tower: 'Sürükle: döndür · Tekerlek: yakınlaş · Shift+tekerlek: döndür · Sağ tık: kaydır · Kişiye çift tık: merkeze al',
+    fan: 'Sürükle: kaydır · Tekerlek: imlece yakınlaş · Boşluğa çift tık: yakınlaş · Kişiye çift tık: merkeze al'
   };
   $('#hint').textContent = hints[S.view];
 }
@@ -1377,6 +1378,9 @@ function animate(now = performance.now()) {
     controls.target.copy(nt);
     if (camTween.t >= 1) camTween = null;
   }
+  if (Math.abs(Math.log(pendingZoom.f)) > 1e-4) {
+    const step = Math.pow(pendingZoom.f, ease(14)); zoomAt(step, pendingZoom.at); pendingZoom.f /= step;
+  }
   controls.update();
   let motion = 0;
   const hl = related(S.hover || S.selected);
@@ -1453,16 +1457,53 @@ function pick(e) {
   const hit = ray.intersectObjects([...nodes.values()].filter(n => n.alpha > 0.3).map(n => n.sprite))[0];
   return hit?.object.userData.id || null;
 }
-renderer.domElement.addEventListener('pointerdown', e => downAt = [e.clientX, e.clientY]);
-renderer.domElement.addEventListener('pointerup', e => {
+const canvas = renderer.domElement;
+canvas.style.cursor = 'grab';
+canvas.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; canvas.style.cursor = 'grabbing'; });
+canvas.addEventListener('pointerup', e => {
+  canvas.style.cursor = S.hover ? 'pointer' : 'grab';
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
   const id = pick(e); if (id) select(id); else if (S.selected) { S.selected = null; closeCard(); hlDirty = true; refreshAll(); }
 });
-renderer.domElement.addEventListener('dblclick', e => { const id = pick(e); if (id) setFocus(id); });
-renderer.domElement.addEventListener('pointermove', e => {
+// double-click a person to centre the tree on them, empty space to zoom in there
+canvas.addEventListener('dblclick', e => { const id = pick(e); if (id) setFocus(id); else wheelZoom(0.5, ndc(e)); });
+canvas.addEventListener('pointermove', e => {
   if (e.buttons || frame % 2) return;
-  const id = pick(e); if (id !== S.hover) { S.hover = id; hlDirty = true; renderer.domElement.style.cursor = id ? 'pointer' : ''; }
+  const id = pick(e); if (id !== S.hover) { S.hover = id; hlDirty = true; canvas.style.cursor = id ? 'pointer' : 'grab'; }
 });
+
+/* Mouse wheel and trackpad: smooth zoom toward the cursor, sideways scroll pans (spins the tower),
+   trackpad pinch arrives as ctrl+wheel. Handled on #stage so OrbitControls keeps only drag and touch. */
+const ndc = e => new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+function wheelZoom(f, at) { camTween = null; pendingZoom.f *= f; pendingZoom.at.copy(at); }
+function zoomAt(f, at) {
+  const dist = controls.getDistance(), d = Math.max(controls.minDistance, Math.min(controls.maxDistance, dist * f));
+  f = d / dist;
+  const p = controls.target.clone();
+  if (!isTower()) { // keep the point under the cursor in place; the tower always zooms along its axis
+    ray.setFromCamera(at, camera);
+    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()), controls.target);
+    ray.ray.intersectPlane(plane, p);
+  }
+  camera.position.sub(p).multiplyScalar(f).add(p);
+  controls.target.sub(p).multiplyScalar(f).add(p);
+}
+function panPixels(dx, dy) {
+  const k = controls.getDistance() * 2 * Math.tan(camera.fov * Math.PI / 360) / innerHeight;
+  const off = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0).multiplyScalar(dx * k)
+    .addScaledVector(new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1), -dy * k);
+  camera.position.add(off); controls.target.add(off);
+}
+$('#stage').addEventListener('wheel', e => {
+  if (S.view === 'fan' || !store.people.size) return;
+  e.preventDefault(); e.stopPropagation(); camTween = null;
+  const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1;
+  let dx = e.deltaX * unit, dy = e.deltaY * unit;
+  if (e.shiftKey && !dx) { dx = dy; dy = 0; }
+  if (e.ctrlKey) return wheelZoom(Math.exp(dy * 0.01), ndc(e)); // trackpad pinch
+  if (dx) { if (isTower()) { camera.position.sub(controls.target).applyAxisAngle(new THREE.Vector3(0, 1, 0), dx * 0.004).add(controls.target); hlDirty = true; } else panPixels(dx, 0); }
+  if (dy) wheelZoom(Math.exp(dy * 0.0016), ndc(e));
+}, { capture: true, passive: false });
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight); labelRenderer.setSize(innerWidth, innerHeight);
@@ -1551,9 +1592,18 @@ function renderFan() {
   const svg = box.querySelector('svg'); svg.style.padding = '80px 20px 20px';
   if (fanT.focus !== S.focus) fanReset(); else fanApply();
   const toSvg = (cx, cy) => { const pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
-  svg.addEventListener('wheel', e => { e.preventDefault(); const p = toSvg(e.clientX, e.clientY); fanZoom(Math.exp(e.deltaY * 0.0015), p.x, p.y); }, { passive: false });
+  svg.style.cursor = 'grab';
+  svg.addEventListener('wheel', e => {
+    e.preventDefault();
+    const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1, p = toSvg(e.clientX, e.clientY);
+    let dx = e.deltaX * unit, dy = e.deltaY * unit;
+    if (e.shiftKey && !dx) { dx = dy; dy = 0; }
+    if (e.ctrlKey) return fanZoom(Math.exp(dy * 0.01), p.x, p.y);
+    if (dx) fanPan(-dx, 0);
+    if (dy) fanZoom(Math.exp(dy * 0.0016), p.x, p.y);
+  }, { passive: false });
   const ptrs = new Map(); let moved = 0, pinch = null;
-  svg.addEventListener('pointerdown', e => { ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ptrs.size === 1) moved = 0; });
+  svg.addEventListener('pointerdown', e => { ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ptrs.size === 1) moved = 0; svg.style.cursor = 'grabbing'; });
   svg.addEventListener('pointermove', e => {
     const prev = ptrs.get(e.pointerId); if (!prev) return;
     const cur = { x: e.clientX, y: e.clientY };
@@ -1565,7 +1615,7 @@ function renderFan() {
       pinch = dist; moved = 99;
     }
   });
-  const up = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null; };
+  const up = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null; if (!ptrs.size) svg.style.cursor = 'grab'; };
   addEventListener('pointerup', up); addEventListener('pointercancel', up);
   svg.addEventListener('pointermove', () => {}, { passive: true });
   svg.addEventListener('click', e => {
@@ -1574,7 +1624,7 @@ function renderFan() {
     if (t.dataset.id) select(t.dataset.id);
     else openPersonForm(null, { relTo: t.dataset.child, rel: t.dataset.add });
   });
-  svg.addEventListener('dblclick', e => { const t = e.target.closest('[data-id]'); if (t) setFocus(t.dataset.id); });
+  svg.addEventListener('dblclick', e => { const t = e.target.closest('[data-id]'); if (t) setFocus(t.dataset.id); else { const p = toSvg(e.clientX, e.clientY); fanZoom(0.5, p.x, p.y); } });
 }
 
 /* ================= UI ================= */
