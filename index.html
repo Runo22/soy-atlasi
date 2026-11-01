@@ -2,7 +2,7 @@
 <html lang="tr" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net blob:; worker-src blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net data: blob:; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Soy Atlası</title>
@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
+  --card-w:clamp(300px,26vw,350px);
   --bg:#f5f6fa; --bg-glow:#ffffff; --panel:rgba(255,255,255,.86); --panel-solid:#ffffff; --sunken:#f1f3f8;
   --line:rgba(16,24,40,.08); --line2:rgba(16,24,40,.16); --hover:rgba(16,24,40,.05);
   --text:#101828; --muted:#535c70; --faint:#7d8699;
@@ -43,11 +44,13 @@ button{cursor:pointer}
 #stage{position:fixed;inset:0;background:radial-gradient(1200px 800px at 50% 40%,var(--bg-glow) 0%,var(--bg) 70%)}
 :root:not([data-theme="dark"]) #stage{background:radial-gradient(1200px 800px at 50% 40%,#fff 0%,var(--bg) 70%),var(--bg);background-image:radial-gradient(rgba(16,24,40,.07) 1px,transparent 1px),radial-gradient(1200px 800px at 50% 40%,#fff 0%,var(--bg) 70%);background-size:22px 22px,auto}
 #stage canvas{display:block}
+#stage,#stage canvas,#labels,.lbl,#fan svg{touch-action:none}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
 #labels{position:fixed;inset:0;pointer-events:none}
 #fan{position:fixed;inset:0;display:none;background:radial-gradient(1000px 700px at 50% 45%,var(--bg-glow) 0%,var(--bg) 70%)}
 #fan svg{width:100%;height:100%}
 body.view-fan #fan{display:block}
-body.view-fan #labels,body.view-fan #hint{display:none}
+body.view-fan #labels{display:none}
 /* nothing to search, switch or export until there is a family */
 body.empty .search,body.empty #viewSeg,body.empty #scopeSeg,body.empty #addBtn,body.empty #importBtn,body.empty .rel,body.empty #privacy,body.empty #hint,body.empty #card{display:none!important}
 
@@ -114,24 +117,32 @@ body.empty .search,body.empty #viewSeg,body.empty #scopeSeg,body.empty #addBtn,b
 .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px}
 .stats{font-size:12px;color:var(--muted)}
 .stats b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
-#hint{position:fixed;bottom:16px;right:16px;font-size:12px;color:var(--muted);z-index:3;white-space:nowrap}
+#hint{position:fixed;bottom:22px;right:76px;font-size:12px;color:var(--muted);z-index:3;white-space:nowrap}
+#nav{position:fixed;right:14px;bottom:14px;z-index:5;display:flex;flex-direction:column;padding:4px;gap:2px;border-radius:14px;transition:right .35s cubic-bezier(.2,.8,.2,1)}
+#nav button{width:38px;height:38px;border:0;background:transparent;border-radius:10px;display:grid;place-items:center;color:var(--text)}
+#nav button:hover{background:var(--hover)}
+#nav svg{width:18px;height:18px}
+#nav span{height:1px;background:var(--line);margin:2px 6px}
+body.card-open #nav{right:calc(var(--card-w) + 28px)}
+body.empty #nav{display:none}
 body.card-open #hint{display:none}
 
 /* card */
-#card{position:fixed;top:70px;right:14px;bottom:14px;width:370px;overflow:auto;padding:20px;z-index:6;background:var(--panel-solid);transform:translateX(calc(100% + 30px));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+#card{position:fixed;top:70px;right:14px;max-height:calc(100dvh - 84px);width:var(--card-w);overflow:auto;overscroll-behavior:contain;padding:16px 18px;z-index:6;background:var(--panel-solid);transform:translateX(calc(100% + 30px));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 #card.open{transform:none}
 .card-head{display:flex;gap:14px;align-items:center}
-.avatar{flex:none;width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font:700 18px var(--display);color:#fff;letter-spacing:-.02em}
-.card-head h2{margin:0;font:700 20px/1.2 var(--display);letter-spacing:-.02em}
+.avatar{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font:700 16px var(--display);color:#fff;letter-spacing:-.02em}
+.card-head h2{margin:0;font:700 18px/1.2 var(--display);letter-spacing:-.02em;padding-right:24px}
 .card-head p{margin:3px 0 0;color:var(--muted);font-size:13px}
 .x{position:absolute;top:12px;right:12px;border:0;background:transparent;color:var(--muted);width:32px;height:32px;border-radius:9px}
 .x:hover{background:var(--hover);color:var(--text)}
-.kin{margin:16px 0 4px;padding:11px 13px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--accent-line)}
+.kin{margin:14px 0 4px;padding:9px 12px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--accent-line)}
 .kin b{font:700 15px var(--display);color:var(--accent);letter-spacing:-.01em}
 .kin div{font-size:12px;color:var(--muted);margin-top:2px}
-dl{display:grid;grid-template-columns:112px 1fr;gap:7px 10px;margin:16px 0;font-size:13px}
+dl{display:grid;grid-template-columns:104px 1fr;gap:6px 10px;margin:14px 0;font-size:12.5px}
 dt{color:var(--muted)}dd{margin:0}
-.sect{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin:18px 0 8px}
+.sect{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin:14px 0 7px}
+.grab{display:none}
 .people{display:flex;flex-wrap:wrap;gap:6px}
 .pchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--sunken);border-radius:99px;padding:4px 10px 4px 5px;font-size:12.5px}
 .pchip:hover{border-color:var(--line2);background:var(--panel-solid)}
@@ -233,8 +244,13 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
   .search kbd{display:none}
   #privacy .chip,.legend{display:none}
   body.card-open #privacy{display:none}
-  #card{top:auto;left:8px;right:8px;width:auto;max-height:62vh;bottom:8px;transform:translateY(calc(100% + 20px))}
+  #card{top:auto;left:0;right:0;width:auto;bottom:0;max-height:44dvh;border-radius:20px 20px 0 0;padding:6px 16px calc(16px + env(safe-area-inset-bottom));transform:translateY(calc(100% + 20px));transition:transform .35s cubic-bezier(.2,.8,.2,1),max-height .3s ease}
   #card.open{transform:none}
+  #card.expanded{max-height:86dvh}
+  .grab{display:flex;justify-content:center;position:sticky;top:-6px;margin:-6px -16px 4px;padding:10px 0 8px;background:var(--panel-solid);border:0;width:calc(100% + 32px);z-index:1;cursor:grab}
+  .grab i{width:38px;height:4px;border-radius:4px;background:var(--line2)}
+  body.card-open #nav{display:none}
+  #toast{bottom:auto;top:112px;transform:translateX(-50%) translateY(-12px)}
   .pillars{grid-template-columns:1fr}
   #empty{align-items:flex-start;overflow:auto;padding:64px 12px 12px}
   .hero{padding:28px 20px}
@@ -298,6 +314,13 @@ details pre{max-height:200px;overflow:auto;background:var(--sunken);padding:8px;
   </div>
   <div class="chip glass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Veriler yalnızca bu sekmede · hiçbir yere gönderilmez, kaydedilmez</div>
 </div>
+<div id="nav" class="glass" role="toolbar" aria-label="Görünüm">
+  <button data-nav="in" title="Yakınlaştır (+)" aria-label="Yakınlaştır"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button data-nav="out" title="Uzaklaştır (−)" aria-label="Uzaklaştır"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg></button>
+  <span></span>
+  <button data-nav="all" title="Tümünü gör (0)" aria-label="Tümünü gör"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  <button data-nav="focus" title="Merkezdeki kişiye dön (F)" aria-label="Merkezdeki kişiye dön"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+</div>
 <div id="hint">Sürükle: döndür · Sağ tık: kaydır · Tekerlek: yakınlaş · Çift tık: merkeze al</div>
 
 <aside id="card" class="glass"></aside>
@@ -340,7 +363,21 @@ const PDFJS = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const lower = s => (s || '').toLocaleLowerCase('tr');
-const norm = s => lower(s).replace(/[^a-zçğıöşü0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+const norm = s => lower(fixTurkish(s)).replace(/[âàá]/g, 'a').replace(/[îíì]/g, 'i').replace(/[ûúù]/g, 'u')
+  .replace(/[^\p{L}\p{N} ]/gu, ' ').replace(/\s+/g, ' ').trim();
+// Repair the ways Turkish letters get mangled on their way out of a PDF.
+const CP1252 = new Map([...new TextDecoder('windows-1252').decode(Uint8Array.from({ length: 128 }, (_, i) => i + 128))].map((c, i) => [c, i + 128]));
+function fixTurkish(s) {
+  if (!s) return s || '';
+  s = String(s).normalize('NFC'); // "I" + combining dot -> "İ", "S" + cedilla -> "Ş"
+  // UTF-8 bytes shown as Windows-1252: "Ã¼" -> "ü", "Ä±" -> "ı", "ÅŸ" -> "ş"
+  if (/[ÃÄÅ]./.test(s)) {
+    const bytes = [...s].map(c => c.charCodeAt(0) < 128 ? c.charCodeAt(0) : CP1252.get(c) ?? -1);
+    if (!bytes.includes(-1)) { try { s = new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(bytes)); } catch { /* not mojibake */ } }
+  }
+  // Windows-1254 text read as Windows-1252: "ý þ ð Ý Þ Ð" never occur in Turkish names
+  return s.replace(/[ýþðÝÞÐ]/g, c => ({ ý: 'ı', þ: 'ş', ð: 'ğ', Ý: 'İ', Þ: 'Ş', Ð: 'Ğ' })[c]);
+}
 const titleCase = s => lower(s).replace(/(^|[\s\-'(/])(\p{L})/gu, (m, a, b) => a + b.toLocaleUpperCase('tr')).replace(/\s+/g, ' ').trim();
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const DATE_RE = /(\d{1,2})[./-](\d{1,2})[./-](\d{4})/;
@@ -614,6 +651,7 @@ function relationPath(t) {
 
 // raw columns -> normalized record
 function normalizeRecord(raw) {
+  raw = Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, typeof v === 'string' ? fixTurkish(v) : v]));
   const g = lower(raw.cinsiyet || raw.gender || '').trim();
   const dogum = raw.dogum || '';
   const birthDate = parseDate(dogum);
@@ -741,7 +779,7 @@ async function pdfItems(file) {
     const vp = page.getViewport({ scale: 1 });
     const tc = await page.getTextContent();
     pages.push({ width: vp.width, items: tc.items.filter(it => it.str && it.str.trim()).map(it => ({
-      s: it.str.trim(), x: it.transform[4], y: it.transform[5], w: it.width || it.str.length * 4, h: Math.abs(it.transform[3]) || 8 })) });
+      s: fixTurkish(it.str).trim(), x: it.transform[4], y: it.transform[5], w: it.width || it.str.length * 4, h: Math.abs(it.transform[3]) || 8 })) });
   }
   await doc.destroy();
   return pages;
@@ -754,7 +792,17 @@ function toLines(items) {
     if (l && Math.abs(l.y - it.y) <= Math.max(2, it.h * 0.45)) l.items.push(it);
     else lines.push({ y: it.y, items: [it] });
   }
-  lines.forEach(l => l.items.sort((a, b) => a.x - b.x));
+  lines.forEach(l => {
+    l.items.sort((a, b) => a.x - b.x);
+    // letters from another font subset (often Ş, İ, Ğ) arrive as separate pieces touching their word: glue them
+    const out = [];
+    for (const it of l.items) {
+      const prev = out[out.length - 1];
+      if (prev && it.x - (prev.x + prev.w) < Math.min(prev.h, it.h) * 0.2) out[out.length - 1] = { ...prev, s: prev.s + it.s, w: it.x + it.w - prev.x };
+      else out.push(it);
+    }
+    l.items = out;
+  });
   return lines;
 }
 function classifyHeader(t) {
@@ -1191,27 +1239,64 @@ function relayout(keepCamera) {
     const lo = new CSS2DObject(el); lo.position.copy(tower ? place(-TOWER_R * 1.25, g * GEN_H) : place(a, g * GEN_H)); ringGroup.add(lo);
   }
   moving = true; hlDirty = true;
-  if (!keepCamera || S.focus !== relayout.fitted) {
-    relayout.fitted = S.focus;
-    // frame the tree from the front, but never so far that neighbours' names can't fit side by side
-    const halfW = (maxX - minX) / 2 + 160, halfH = (maxY - minY) / 2 + 110;
-    const vf = camera.fov * Math.PI / 360, hf = Math.atan(Math.tan(vf) * camera.aspect);
-    const fit = Math.max(halfW / Math.tan(hf), halfH / Math.tan(vf), 380);
-    const readable = GAP * innerHeight / (2 * 150 * Math.tan(vf));
-    const dist = Math.min(fit, Math.max(readable, 520));
-    const zoomed = dist < fit;
-    const cx = zoomed ? 0 : (minX + maxX) / 2, cy = zoomed ? Math.min(Math.max(GEN_H * 0.6, minY), maxY) : (minY + maxY) / 2;
-    if (tower) {
-      // orbit around the tower's axis, looking at its front face from a little above
-      const d = Math.max(readable, halfH / Math.tan(vf) * 0.8, 520);
-      camTween = { from: controls.target.clone(), to: new THREE.Vector3(0, cy, 0), t: 0,
-        fromPos: camera.position.clone(), toPos: new THREE.Vector3(0, cy + d * 0.22, TOWER_R + d) };
-    } else camTween = { from: controls.target.clone(), to: new THREE.Vector3(cx, cy, 0), t: 0,
-      fromPos: camera.position.clone(), toPos: new THREE.Vector3(cx, cy + dist * 0.05, dist) };
-  }
+  layout.bounds = { minX, maxX, minY, maxY };
+  applyControls();
+  if (!keepCamera || S.focus !== relayout.fitted) { relayout.fitted = S.focus; frameView('auto'); }
   updateChrome();
 }
 let camTween = null;
+// 'auto': readable zoom around the focus (or everything if it fits); 'all': the whole tree; 'focus': back to the focus
+function frameView(mode = 'auto') {
+  const b = layout.bounds; if (!b) return;
+  const halfW = (b.maxX - b.minX) / 2 + 160, halfH = (b.maxY - b.minY) / 2 + 110;
+  const vf = camera.fov * Math.PI / 360, hf = Math.atan(Math.tan(vf) * camera.aspect);
+  const fit = Math.max(halfW / Math.tan(hf), halfH / Math.tan(vf), 380);
+  const readable = GAP * innerHeight / (2 * 150 * Math.tan(vf));
+  const whole = mode === 'all' || (mode === 'auto' && fit <= Math.max(readable, 520));
+  const cy = whole ? (b.minY + b.maxY) / 2 : Math.min(Math.max(GEN_H * 0.6, b.minY), b.maxY);
+  let target, pos;
+  if (isTower()) {
+    // orbit around the tower's axis, looking at its front face from a little above
+    const d = whole ? Math.max(halfH / Math.tan(vf), TOWER_R * 1.3 / Math.tan(hf)) : Math.max(readable, 520);
+    target = new THREE.Vector3(0, cy, 0); pos = new THREE.Vector3(0, cy + d * 0.22, TOWER_R + d);
+  } else {
+    const d = whole ? fit : Math.max(readable, 520), cx = whole ? (b.minX + b.maxX) / 2 : 0;
+    target = new THREE.Vector3(cx, cy, 0); pos = new THREE.Vector3(cx, cy + d * 0.05, d);
+  }
+  camTween = { from: controls.target.clone(), to: target, t: 0, fromPos: camera.position.clone(), toPos: pos };
+}
+function zoomBy(f) {
+  if (S.view === 'fan') return fanZoom(f);
+  const dir = camera.position.clone().sub(controls.target);
+  const d = Math.max(controls.minDistance, Math.min(controls.maxDistance, dir.length() * f));
+  camTween = { from: controls.target.clone(), to: controls.target.clone(), t: 0, dur: 0.35,
+    fromPos: camera.position.clone(), toPos: controls.target.clone().addScaledVector(dir.normalize(), d) };
+}
+function panBy(dx, dy) {
+  const d = controls.getDistance() * 0.12, right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0), up = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1);
+  const off = right.multiplyScalar(dx * d).addScaledVector(up, dy * d);
+  camTween = { from: controls.target.clone(), to: controls.target.clone().add(off), t: 0, dur: 0.3, fromPos: camera.position.clone(), toPos: camera.position.clone().add(off) };
+}
+function orbitBy(a) {
+  const rel = camera.position.clone().sub(controls.target).applyAxisAngle(new THREE.Vector3(0, 1, 0), a);
+  camTween = { from: controls.target.clone(), to: controls.target.clone(), t: 0, dur: 0.35, fromPos: camera.position.clone(), toPos: controls.target.clone().add(rel), arc: a };
+}
+// Tree: drag pans (it's a flat sheet); tower: drag spins the cylinder. Both zoom toward the cursor.
+function applyControls() {
+  const tower = isTower();
+  controls.zoomToCursor = true; controls.screenSpacePanning = true;
+  controls.mouseButtons = tower ? { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN }
+    : { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+  controls.touches = tower ? { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN } : { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_PAN };
+  controls.minPolarAngle = tower ? 0.3 : Math.PI / 2 - 0.6; controls.maxPolarAngle = tower ? Math.PI - 0.3 : Math.PI / 2 + 0.4;
+  controls.minAzimuthAngle = tower ? -Infinity : -0.8; controls.maxAzimuthAngle = tower ? Infinity : 0.8;
+  const hints = {
+    tree: 'Sürükle: kaydır · Sağ tık: eğ · Tekerlek: yakınlaş · Çift tık: merkeze al',
+    tower: 'Sürükle: döndür · Sağ tık: kaydır · Tekerlek: yakınlaş · Çift tık: merkeze al',
+    fan: 'Sürükle: kaydır · Tekerlek: yakınlaş · Çift tık: merkeze al'
+  };
+  $('#hint').textContent = hints[S.view];
+}
 function tweenTarget(to) { camTween = { from: controls.target.clone(), to: to.clone(), t: 0 }; }
 
 function related(id) {
@@ -1283,10 +1368,11 @@ function animate(now = performance.now()) {
   const ease = k => 1 - Math.exp(-dt * k);
   if (S.view === 'fan') return;
   if (camTween) {
-    camTween.t = Math.min(1, camTween.t + dt / 1.1);
+    camTween.t = Math.min(1, camTween.t + dt / (camTween.dur || 1.1));
     const e = 1 - (1 - camTween.t) ** 3;
     const nt = camTween.from.clone().lerp(camTween.to, e);
-    if (camTween.toPos) camera.position.lerpVectors(camTween.fromPos, camTween.toPos, e);
+    if (camTween.arc) camera.position.copy(camTween.fromPos).sub(camTween.from).applyAxisAngle(new THREE.Vector3(0, 1, 0), camTween.arc * e).add(nt);
+    else if (camTween.toPos) camera.position.lerpVectors(camTween.fromPos, camTween.toPos, e);
     else camera.position.add(nt.clone().sub(controls.target));
     controls.target.copy(nt);
     if (camTween.t >= 1) camTween = null;
@@ -1447,14 +1533,43 @@ function fanSvg(focus) {
   const ext = R0 + G * W + 30;
   const center = `<circle r="${R0 - 6}" fill="${TH.accent}"/><text text-anchor="middle" class="fan-txt" font-size="15" font-weight="700" dy="-4" fill="#fff" style="fill:#fff">${esc(fmt(p0, 16))}</text><text text-anchor="middle" class="fan-txt" font-size="11" dy="13" opacity=".85" style="fill:#fff">${esc(lifespan(p0))}</text>`;
   const legend = `<text x="${-ext + 20}" y="${-ext + 40}" class="fan-title" font-size="20" fill="${TH.text}">${esc(fullName(p0))}</text><text x="${-ext + 20}" y="${-ext + 60}" class="fan-sub" font-size="12" fill="${TH.muted}">Ata yelpazesi · baba tarafı mavi, anne tarafı mercan, torunlar yeşil</text>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-ext} ${-ext} ${ext * 2} ${ext * 2}" preserveAspectRatio="xMidYMid meet"><g>${parts.join('')}${center}</g>${legend}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-ext} ${-ext} ${ext * 2} ${ext * 2}" preserveAspectRatio="xMidYMid meet"><g class="fan-root">${parts.join('')}${center}</g>${legend}</svg>`;
 }
+// fan pan/zoom: transform of the chart group, kept while the focus stays the same
+let fanT = { k: 1, x: 0, y: 0, focus: null };
+const fanApply = () => $('#fan .fan-root')?.setAttribute('transform', `translate(${fanT.x} ${fanT.y}) scale(${fanT.k})`);
+function fanZoom(f, px = 0, py = 0) {
+  const k = Math.max(0.5, Math.min(6, fanT.k / f)), r = k / fanT.k;
+  fanT.x = px - (px - fanT.x) * r; fanT.y = py - (py - fanT.y) * r; fanT.k = k; fanApply();
+}
+function fanPan(dx, dy) { const svg = $('#fan svg'); const s = svg ? svg.getScreenCTM().a : 1; fanT.x += dx / s; fanT.y += dy / s; fanApply(); }
+function fanReset() { fanT = { k: 1, x: 0, y: 0, focus: S.focus }; fanApply(); }
 function renderFan() {
   const box = $('#fan');
   if (!S.focus) { box.innerHTML = ''; return; }
   box.innerHTML = fanSvg(S.focus);
   const svg = box.querySelector('svg'); svg.style.padding = '80px 20px 20px';
+  if (fanT.focus !== S.focus) fanReset(); else fanApply();
+  const toSvg = (cx, cy) => { const pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
+  svg.addEventListener('wheel', e => { e.preventDefault(); const p = toSvg(e.clientX, e.clientY); fanZoom(Math.exp(e.deltaY * 0.0015), p.x, p.y); }, { passive: false });
+  const ptrs = new Map(); let moved = 0, pinch = null;
+  svg.addEventListener('pointerdown', e => { ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ptrs.size === 1) moved = 0; });
+  svg.addEventListener('pointermove', e => {
+    const prev = ptrs.get(e.pointerId); if (!prev) return;
+    const cur = { x: e.clientX, y: e.clientY };
+    if (ptrs.size === 1) { moved += Math.abs(cur.x - prev.x) + Math.abs(cur.y - prev.y); if (moved > 4) fanPan(cur.x - prev.x, cur.y - prev.y); }
+    ptrs.set(e.pointerId, cur);
+    if (ptrs.size === 2) {
+      const [a, b] = [...ptrs.values()], dist = Math.hypot(a.x - b.x, a.y - b.y), mid = toSvg((a.x + b.x) / 2, (a.y + b.y) / 2);
+      if (pinch) fanZoom(pinch / dist, mid.x, mid.y);
+      pinch = dist; moved = 99;
+    }
+  });
+  const up = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null; };
+  addEventListener('pointerup', up); addEventListener('pointercancel', up);
+  svg.addEventListener('pointermove', () => {}, { passive: true });
   svg.addEventListener('click', e => {
+    if (moved > 4) return; // that was a drag, not a tap
     const t = e.target.closest('[data-id],[data-add]'); if (!t) return;
     if (t.dataset.id) select(t.dataset.id);
     else openPersonForm(null, { relTo: t.dataset.child, rel: t.dataset.add });
@@ -1473,7 +1588,7 @@ function setFocus(id) {
   relayout(); openCard(id);
   if (S.view === 'fan') renderFan();
 }
-function closeCard() { $('#card').classList.remove('open'); document.body.classList.remove('card-open'); }
+function closeCard() { $('#card').classList.remove('open', 'expanded'); document.body.classList.remove('card-open'); }
 function pchip(id, sub) {
   const p = P(id);
   return `<button class="pchip" data-goto="${id}"><i style="background:${GCOL[p.gender]};${p.inferred ? 'background:transparent;border:1.5px solid ' + GCOL[p.gender] : ''}"></i>${esc(fullName(p))}${sub ? ` <small>${esc(sub)}</small>` : ''}</button>`;
@@ -1487,6 +1602,7 @@ function openCard(id) {
   const group = (title, list, subFn) => list.length ? `<div class="sect">${title}</div><div class="people">${list.map(x => pchip(x, subFn?.(x))).join('')}</div>` : '';
   const yr = x => lifespan(P(x));
   $('#card').innerHTML = `
+    <button class="grab" data-grab aria-label="Kartı büyüt veya küçült"><i></i></button>
     <button class="x" data-close aria-label="Kapat">✕</button>
     <div class="card-head">
       <div class="avatar" style="background:${GCOL[p.gender]};${p.alive === false ? 'filter:saturate(.45) brightness(.85)' : ''}">${esc(initials(p))}</div>
@@ -1528,6 +1644,19 @@ function openCard(id) {
   $('#card').classList.add('open'); document.body.classList.add('card-open');
   $('#card').scrollTop = 0;
 }
+// mobile bottom sheet: tap the handle to expand/collapse, swipe it up/down
+{
+  let y0 = null;
+  $('#card').addEventListener('pointerdown', e => { if (e.target.closest('[data-grab]')) y0 = e.clientY; });
+  addEventListener('pointerup', e => {
+    if (y0 == null) return; const dy = e.clientY - y0; y0 = null;
+    const c = $('#card');
+    if (Math.abs(dy) < 8) c.classList.toggle('expanded');
+    else if (dy < 0) c.classList.add('expanded');
+    else if (c.classList.contains('expanded')) c.classList.remove('expanded');
+    else { S.selected = null; closeCard(); hlDirty = true; refreshAll(); }
+  });
+}
 $('#card').addEventListener('click', e => {
   const id = S.selected;
   if (e.target.closest('[data-close]')) { S.selected = null; closeCard(); hlDirty = true; refreshAll(); return; }
@@ -1549,7 +1678,17 @@ function closeModal() { $('#modal').classList.remove('open'); $('#dialog').inner
 $('#modal').addEventListener('click', e => { if (e.target.id === 'modal' || e.target.closest('[data-close]')) closeModal(); });
 addEventListener('keydown', e => {
   if (e.key === 'Escape') { if ($('#modal').classList.contains('open')) closeModal(); else { closeCard(); S.selected = null; hlDirty = true; } $('#exportMenu').classList.remove('open'); }
-  if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') { e.preventDefault(); $('#q').focus(); }
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) || document.activeElement.isContentEditable;
+  if (typing || $('#modal').classList.contains('open') || !store.people.size || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === '/') { e.preventDefault(); $('#q').focus(); return; }
+  const fan = S.view === 'fan', tower = isTower();
+  const act = {
+    '+': () => zoomBy(0.75), '=': () => zoomBy(0.75), '-': () => zoomBy(1.33), '_': () => zoomBy(1.33),
+    '0': () => fan ? fanReset() : frameView('all'), f: () => fan ? fanReset() : frameView('focus'), F: () => fan ? fanReset() : frameView('focus'),
+    ArrowLeft: () => fan ? fanPan(80, 0) : tower ? orbitBy(-0.35) : panBy(-1, 0), ArrowRight: () => fan ? fanPan(-80, 0) : tower ? orbitBy(0.35) : panBy(1, 0),
+    ArrowUp: () => fan ? fanPan(0, 80) : panBy(0, 1), ArrowDown: () => fan ? fanPan(0, -80) : panBy(0, -1)
+  }[e.key];
+  if (act) { e.preventDefault(); act(); }
 });
 function askPassword(title, confirmTwice) {
   return new Promise(res => {
@@ -1762,6 +1901,8 @@ function commitPending() {
 
 // whole-window drop
 addEventListener('dragover', e => e.preventDefault());
+// Safari ignores user-scalable=no; block its page pinch so only the scene zooms
+['gesturestart', 'gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault()));
 addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer?.files?.length) handleFiles(e.dataTransfer.files); });
 
 // search
@@ -1792,10 +1933,15 @@ $('#viewSeg').onclick = e => {
   const b = e.target.closest('[data-view]'); if (!b || b.dataset.view === S.view) return;
   S.view = b.dataset.view; $$('#viewSeg button').forEach(x => x.classList.toggle('on', x === b));
   document.body.classList.toggle('view-fan', S.view === 'fan');
-  if (S.view === 'fan') renderFan(); else { relayout.fitted = null; relayout(); }
+  if (S.view === 'fan') { renderFan(); applyControls(); } else { relayout.fitted = null; relayout(); }
 };
 $('#scopeSeg').onclick = e => { const b = e.target.closest('[data-scope]'); if (!b) return; S.scope = b.dataset.scope; $$('#scopeSeg button').forEach(x => x.classList.toggle('on', x === b)); relayout(); };
 $('#importBtn').onclick = () => openImport();
+$('#nav').onclick = e => {
+  const k = e.target.closest('[data-nav]')?.dataset.nav; if (!k) return;
+  const fan = S.view === 'fan';
+  ({ in: () => zoomBy(0.7), out: () => zoomBy(1.4), all: () => fan ? fanReset() : frameView('all'), focus: () => fan ? fanReset() : frameView('focus') })[k]();
+};
 $('#addBtn').onclick = () => openPersonForm(null);
 $('#exportBtn').onclick = e => { e.stopPropagation(); $('#exportMenu').classList.toggle('open'); };
 $('#exportMenu').onclick = async e => {

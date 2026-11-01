@@ -9,6 +9,8 @@ Aile ağacını üç boyutlu bir takımyıldız olarak gösteren, tek dosyalık 
 - **Ağaç görünümü** — her kuşak hafif kavisli tek bir sıraya dizilir: atalar yukarıda, torunlar aşağıda, baba tarafı solda, eşin ailesi sağda. Etiketler çakışmaz; ekrana sığmayanlar yakınlaştırınca görünür.
 - **Kule 3B görünümü** — aynı ağaç dönen bir silindirin yüzeyine sarılır. Döndürdükçe arka taraftaki dallar öne gelir, arkada kalanlar soluklaşır.
 - **Aydınlık / koyu tema** — varsayılan aydınlık, tek tıkla koyu.
+- **Gezinme** — sağ alttaki düğmelerle yakınlaştır/uzaklaştır, tümünü gör, merkeze dön. Ağaç'ta sürükleyince kayar, Kule'de döner; tekerlek imlecin olduğu yere yakınlaşır. Mobilde tek parmak kaydırır/döndürür, iki parmak yakınlaştırır. Kişi kartı mobilde alt sayfa olarak açılır.
+- **Klavye** — `+` / `-` yakınlaştır, `0` tümünü gör, `F` merkeze dön, ok tuşları kaydır (Kule'de döndür), `/` ara, `Esc` kapat.
 - **Yelpaze görünümü** — 7 kuşağa kadar ata yelpazesi ve torun yayı. Boş dilime tıklayarak eksik ebeveyn eklenebilir. SVG olarak dışa aktarılır.
 - **e-Devlet içe aktarma** — "Alt-Üst Soy Bilgisi Sorgulama" PDF'i tarayıcıda okunur. İçe aktarmadan önce tablo gözden geçirilip düzeltilebilir.
 - **Birleşen ağaçlar** — farklı kişilerin belgeleri (eş, kuzen, teyze…) ortak kişiler üzerinden otomatik birleşir. Eşleşmede ad, doğum tarihi ve baba/ana adı kullanılır. Kaçan eşleşmeler "Birleştir…" ile elle birleştirilir.
