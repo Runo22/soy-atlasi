@@ -253,7 +253,6 @@ body.view-compass #labels,body.view-compass #nav,body.view-compass #hint,body.vi
 .cp-top{display:flex;gap:14px;align-items:center}
 .cp-top .cp-av{width:60px;height:60px;border-radius:20px;font-size:21px;box-shadow:0 10px 24px -10px var(--g)}
 .cp-hero h2{margin:0;font:700 23px/1.12 var(--display);letter-spacing:-.025em}
-.cp-hero h2 span{color:var(--muted);font-size:17px}
 .cp-top p{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
 .cp-kin{margin-top:14px;padding:8px 12px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--accent-line);display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
 .cp-kin b{font:700 15px var(--display);color:var(--accent);letter-spacing:-.01em}
@@ -495,7 +494,7 @@ function parseDate(s) {
 }
 const yearOf = d => { const m = /(\d{4})$/.exec(d || ''); return m ? +m[1] : null; };
 const firstKey = p => norm(p.first);
-const fullName = p => [p.first, p.last].filter(Boolean).join(' ') || '(adsız)';
+const fullName = p => p.first ? [p.first, p.last].filter(Boolean).join(' ') : `Adı bilinmiyor${p.last ? ' ' + p.last : ''}`;
 const initials = p => ((p.first || '?')[0] + ((p.last || '')[0] || '')).toLocaleUpperCase('tr');
 const GCOL = { M: 'var(--m)', F: 'var(--f)', U: 'var(--u)' };
 const THEMES = {
@@ -503,11 +502,13 @@ const THEMES = {
   dark: { M: '#5cc8f0', F: '#ff9b86', U: '#b9a7ff', dead: '#8b93a8', accent: '#f2c76e', guide: '#8ea2cc', bg: '#070b14', text: '#e9edf5', muted: '#949db2', glow: true }
 };
 let TH = THEMES[document.documentElement.dataset.theme] || THEMES.light;
+// years only, in words where a date is missing (no religious symbols)
 function lifespan(p) {
   const b = yearOf(p.birthDate), d = yearOf(p.deathDate);
-  if (!b && !d) return p.alive === false ? '†' : '';
-  if (p.alive === false || d) return `${b ?? '?'} – ${d ?? '?'}`;
-  return `${b}`;
+  if (p.alive !== false && !d) return b ? `${b}` : '';
+  if (b && d) return `${b} – ${d}`;
+  if (d) return `ö. ${d}`;
+  return b ? `${b} · vefat` : 'Vefat etti';
 }
 function ageText(p) {
   const b = yearOf(p.birthDate); if (!b) return '';
@@ -784,13 +785,15 @@ function buildFromRecords(recs, sourceId) {
   const reg = (key, p) => { let a = byPath.get(key); if (!a) byPath.set(key, a = []); a.push(p); };
   const T = id => temps.find(t => t.id === id);
 
-  function ensure(key) { // make sure someone exists at a path, inferring from names if needed
+  // Make sure someone exists at a path, inferring from names if needed. e-Devlet sometimes leaves out a link
+  // (say the mother's father) while listing people above it; with `bridge` an unnamed placeholder keeps them attached.
+  function ensure(key, bridge = false) {
     if (byPath.has(key)) return byPath.get(key)[0];
     if (key === '') return null;
-    const last = key.slice(-1), child = ensure(key.slice(0, -1));
+    const last = key.slice(-1), child = ensure(key.slice(0, -1), bridge);
     if (!child || !'FM'.includes(last)) return null;
     const name = last === 'F' ? child.fatherName : child.motherName;
-    if (!name) return null;
+    if (!name && !bridge) return null;
     const p = mk({ first: name, gender: last === 'F' ? 'M' : 'F', inferred: true, last: last === 'F' && child.gender === 'M' ? child.last : '' });
     child[last === 'F' ? 'father' : 'mother'] = p.id; reg(key, p);
     return p;
@@ -811,7 +814,7 @@ function buildFromRecords(recs, sourceId) {
     const key = path.join('');
     if (!path.length) { if (!self) self = p; reg('', p); continue; }
     const lastT = path[path.length - 1], prefix = key.slice(0, -1);
-    const anchors = byPath.get(prefix) || (ensure(prefix) ? byPath.get(prefix) : []);
+    const anchors = byPath.get(prefix) || (ensure(prefix, true) ? byPath.get(prefix) : []);
     if ('FM'.includes(lastT)) {
       const want = n => norm(n) === norm(p.first);
       const child = anchors.find(c => want(lastT === 'F' ? c.fatherName : c.motherName)) || anchors[0];
@@ -839,6 +842,9 @@ function buildFromRecords(recs, sourceId) {
     if (!p.mother && p.motherName) { const m = mk({ first: p.motherName, gender: 'F', inferred: true }); p.mother = m.id; }
     if (p.father && p.mother) { const f = T(p.father), m = T(p.mother); if (f && m) { f.spouses.add(m.id); m.spouses.add(f.id); } }
   }
+  // inferred men carry their father's surname (a placeholder grandfather gets it from his own father's record)
+  for (let pass = 0; pass < 4; pass++)
+    for (const p of temps) if (p.inferred && p.gender === 'M' && !p.last && T(p.father)?.last) p.last = T(p.father).last;
   return { temps, self };
 }
 
@@ -1290,7 +1296,7 @@ function refreshNode(id) {
   n.sprite.material.map = nodeTex(p); n.sprite.material.blending = blend(); n.sprite.material.needsUpdate = true;
   const kin = S.focus && id !== S.focus ? kinTerm(S.focus, id).term.replace(/ \(.+\)$/, '') : '';
   n.el.className = 'lbl' + (p.alive === false ? ' dead' : '') + (p.inferred ? ' inferred' : '') + (id === S.focus ? ' focus' : '') + (id === S.selected ? ' sel' : '');
-  n.el.innerHTML = `<b>${esc(fullName(p))}${p.alive === false ? ' <small style="opacity:.6">†</small>' : ''}</b>${lifespan(p) ? `<span>${esc(lifespan(p))}</span>` : ''}${kin && kin.length < 34 ? `<em>${esc(kin)}</em>` : ''}`;
+  n.el.innerHTML = `<b>${esc(fullName(p))}</b>${lifespan(p) ? `<span>${esc(lifespan(p))}</span>` : ''}${kin && kin.length < 34 ? `<em>${esc(kin)}</em>` : ''}`;
   n.w = 0;
   // estimate the label box so collisions can be resolved before it is ever laid out
   const lines = [fullName(p), lifespan(p), kin && kin.length < 34 ? kin : ''].filter(Boolean);
@@ -1824,7 +1830,7 @@ function cpHero(id) {
   if (!kin) facts.unshift('★ Ağacın merkezi');
   return `<article class="cp-hero${p.alive === false ? ' dead' : ''}" style="--g:${GCOL[p.gender]}">
     <div class="cp-top"><span class="cp-av">${esc(initials(p))}</span>
-      <div><h2>${esc(fullName(p))}${p.alive === false ? ' <span>†</span>' : ''}</h2>
+      <div><h2>${esc(fullName(p))}</h2>
       <p>${[lifespan(p), ageText(p)].filter(Boolean).map(esc).join(' · ') || 'Tarih bilinmiyor'}${p.birthPlace ? `<br>${esc(p.birthPlace)} doğumlu` : ''}</p></div></div>
     ${kin ? `<div class="cp-kin">${kin}</div>` : ''}
     ${facts.length ? `<div class="cp-facts">${facts.map(f => `<span${f[0] === '★' ? ' class="hl"' : ''}>${esc(f)}</span>`).join('')}</div>` : ''}
@@ -1974,7 +1980,7 @@ function openCard(id) {
     <button class="x" data-close aria-label="Kapat">${X_ICON}</button>
     <div class="card-head">
       <div class="avatar" style="background:${GCOL[p.gender]};${p.alive === false ? 'filter:saturate(.45) brightness(.85)' : ''}">${esc(initials(p))}</div>
-      <div><h2>${esc(fullName(p))}${p.alive === false ? ' <span style="color:var(--muted);font-size:16px">†</span>' : ''}</h2>
+      <div><h2>${esc(fullName(p))}</h2>
       <p>${esc(lifespan(p))}${ageText(p) ? ' · ' + esc(ageText(p)) : ''}</p></div>
     </div>
     ${id !== S.focus && focusP ? `<div class="kin"><b>${esc(kin.term)}</b><div>${esc(possessive(focusP.first))} ${esc(lower(kin.term[0]) + kin.term.slice(1))}${kin.chain ? ' · ' + esc(kin.chain) : ''}</div></div>` : `<div class="kin"><b>Ağacın merkezi</b><div>Akrabalık adları bu kişiye göre hesaplanıyor</div></div>`}
@@ -2155,7 +2161,7 @@ function linkRelative(base, n, rel) {
   }
   if (rel === 'sibling') {
     if (!base.father && !base.mother) {
-      const ph = addPerson({ first: base.fatherName || '?', gender: 'M', inferred: true, last: base.last });
+      const ph = addPerson({ first: base.fatherName || '', gender: 'M', inferred: true, last: base.last });
       base.father = ph.id;
     }
     n.father = base.father; n.mother = base.mother;
